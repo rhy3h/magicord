@@ -10,11 +10,14 @@ REMOVE_ID = int(os.getenv('REMOVE_ID'))
 MEMBER_NUNBER_ID = int(os.getenv('MEMBER_NUNBER_ID'))
 VOICE_PORTAL_ID = int(os.getenv('VOICE_PORTAL_ID'))
 VOICE_CHANNEL_ID = int(os.getenv('VOICE_CHANNEL_ID'))
+ROLE_MESSAGE_ID = int(os.getenv('ROLE_MESSAGE_ID'))
+TEST_ROLE_ID = int(os.getenv('TEST_ROLE_ID'))
 
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 intents.messages = True
+intents.reactions = True
 
 client = discord.Client(intents=intents)
 
@@ -53,5 +56,12 @@ async def on_voice_state_update(member, before, after):
             if before.channel.id == tempVoiceChannels[member.id]:
                 await before.channel.delete()
                 del tempVoiceChannels[member.id]
+
+@client.event
+async def on_raw_reaction_add(payload):
+    if payload.message_id == ROLE_MESSAGE_ID:
+        guild = client.get_guild(payload.guild_id)
+        role = guild.get_role(TEST_ROLE_ID)
+        await payload.member.add_roles(role)
 
 client.run(DISCORD_TOKEN)
