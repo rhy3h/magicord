@@ -25,21 +25,21 @@ intents.reactions = True
 
 client = discord.Client(intents=intents)
 
-log_path = './log.txt'
-log_txt = open(log_path, 'r')
-log_lines = []
-for line in log_txt.readlines():
-    log_lines.append(line.replace("\n", ""))
-log_txt.close()
-
 live_status = False
 
 
 @tasks.loop(seconds=60)
 async def live_notify_task():
+    log_path = './log.txt'
+    log_txt = open(log_path, 'r')
+    log_lines = []
+    for line in log_txt.readlines():
+        log_lines.append(line.replace("\n", ""))
+    log_txt.close()
+
     global live_status
     channelStatus = is_live()
-    
+
     if live_status and len(channelStatus) == 0:
         live_status = False
     if not live_status and len(channelStatus) == 1 and channelStatus[0]["started_at"] not in log_lines:
@@ -50,7 +50,6 @@ async def live_notify_task():
         log_txt = open(log_path, 'a+')
         log_txt.write(started_at)
         log_txt.close()
-        log_lines.append(started_at)
 
         # Discord 通知
         channel = client.get_channel(NOTIFY_ID)
@@ -61,9 +60,6 @@ async def live_notify_task():
 async def on_ready():
     print(f'機器人登入囉 {client.user}')
     live_notify_task.start()
-
-    # numberOfMembersChannel = client.get_channel(MEMBER_NUNBER_ID)
-    # await numberOfMembersChannel.edit(name=f"人數：{len(client.guilds[0].members)}")
 
 
 @client.event
