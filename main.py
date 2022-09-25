@@ -6,6 +6,8 @@ import discord
 from discord.ext import tasks
 from twitch.live import is_live
 
+import datetime
+
 dotenv.load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 JOIN_ID = int(os.getenv('JOIN_ID'))
@@ -56,9 +58,30 @@ async def live_notify_task():
         await channel.send(f"https://www.twitch.tv/{user_login} {user_name} 開台了")
 
 
+@tasks.loop(hours=24)
+async def member_count_task():
+    member_log_path = './member_log.txt'
+    member_log_txt = open(member_log_path, 'r')
+    member_log_lines = []
+    for line in member_log_txt.readlines():
+        member_log_lines.append(line.replace("\n", ""))
+    member_log_txt.close()
+
+    today = str(datetime.date.today())
+    if today not in member_log_lines:
+        print("更新人數")
+        member_log_txt = open(member_log_path, 'a+')
+        member_log_txt.write(today)
+        member_log_txt.close()
+
+        numberOfMembersChannel = client.get_channel(MEMBER_NUNBER_ID)
+        await numberOfMembersChannel.edit(name=f"人數：{len(client.guilds[0].members)}")
+
+
 @client.event
 async def on_ready():
     print(f'機器人登入囉 {client.user}')
+    member_count_task.start()
     live_notify_task.start()
 
 
