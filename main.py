@@ -8,6 +8,37 @@ from twitch.live import is_live
 
 import datetime
 
+import re
+
+import asyncio
+import youtube_dl
+
+# Suppress noise about console usage from errors
+youtube_dl.utils.bug_reports_message = lambda: ''
+
+
+ytdl_format_options = {
+    'format': 'bestaudio/best',
+    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'restrictfilenames': True,
+    'noplaylist': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'auto',
+    # bind to ipv4 since ipv6 addresses cause issues sometimes
+    'source_address': '0.0.0.0',
+}
+
+ffmpeg_options = {
+    'options': '-vn',
+}
+
+ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+
+
 dotenv.load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 JOIN_ID = int(os.getenv('JOIN_ID'))
@@ -126,5 +157,63 @@ async def on_raw_reaction_add(payload):
         guild = client.get_guild(payload.guild_id)
         role = guild.get_role(TEST_ROLE_ID)
         await payload.member.add_roles(role)
+
+
+class YTDLSource(discord.PCMVolumeTransformer):
+    def __init__(self, source, *, data, volume=0.5):
+        super().__init__(source, volume)
+
+        self.data = data
+
+        self.title = data.get('title')
+        self.url = data.get('url')
+
+    @classmethod
+    async def from_url(cls, url, *, loop=None, stream=False):
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
+
+        if 'entries' in data:
+            # take first item from a playlist
+            data = data['entries'][0]
+
+        filename = data['url'] if stream else ytdl.prepare_filename(data)
+        print(filename)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options, executable="./bin/ffmpeg.exe"), data=data)
+
+
+@client.event
+async def on_message(message):
+    if message.channel.id == 1023497560972869655:
+        if message.content.startswith('play'):
+            play_split = message.content.split()
+            if len(play_split) == 2:
+                youtube_regex = (
+                    r'(https?://)?(www\.)?'
+                    '(youtube|youtu|youtube-nocookie)\.(com|be)/'
+                    '(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})'
+                )
+                youtube_regex_match = re.match(youtube_regex, play_split[1])
+                if youtube_regex_match:
+                    print(f"網址: {play_split[1]}")
+                    if client.guilds[0].voice_client is None:
+                        channel = client.get_channel(1023497620800417812)
+                        await channel.connect()
+                        player = await YTDLSource.from_url(play_split[1], loop=False, stream=True)
+                        client.guilds[0].voice_client.play(player, after=lambda e: print(
+                            f'Player error: {e}') if e else None)
+                        await message.delete()
+                        await message.channel.send(f"正在播放 {play_split[1]}")
+                    # else:
+                    # TODO: Push to queue
+                else:
+                    await message.delete()
+            else:
+                await message.delete()
+        elif message.content.startswith('pause'):
+            print("暫停")
+        else:
+            if client.user.id is not message.author.id:
+                await message.delete()
 
 client.run(DISCORD_TOKEN)
