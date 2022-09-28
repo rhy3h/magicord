@@ -178,7 +178,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
             data = data['entries'][0]
 
         filename = data['url'] if stream else ytdl.prepare_filename(data)
-        print(filename)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options, executable="./bin/ffmpeg.exe"), data=data)
 
 
@@ -199,7 +198,7 @@ async def on_message(message):
                     if client.guilds[0].voice_client is None:
                         channel = client.get_channel(1023497620800417812)
                         await channel.connect()
-                        player = await YTDLSource.from_url(play_split[1], loop=False, stream=True)
+                        player = await YTDLSource.from_url(play_split[1], loop=False)
                         client.guilds[0].voice_client.play(player, after=lambda e: print(
                             f'Player error: {e}') if e else None)
                         await message.delete()
