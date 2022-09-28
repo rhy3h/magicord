@@ -101,20 +101,23 @@ async def on_member_remove(member):
 tempVoiceChannels = {}
 
 
-@client.event
-async def on_voice_state_update(member, before, after):
-    if before.channel is None and after.channel is not None:
-        if after.channel.id == VOICE_PORTAL_ID:
-            channel = client.get_channel(VOICE_CHANNEL_ID)
-            tempVoiceChannel = await channel.create_voice_channel(str(member))
-            tempVoiceChannels[member.id] = tempVoiceChannel.id
-            await member.move_to(tempVoiceChannel)
-
-    if after.channel is None and before.channel is not None:
-        if tempVoiceChannels[member.id]:
+async def checkTempVoiceChannel(before, member):
+    if before.channel is not None:
+        if member.id in tempVoiceChannels:
             if before.channel.id == tempVoiceChannels[member.id]:
                 await before.channel.delete()
                 del tempVoiceChannels[member.id]
+
+
+@client.event
+async def on_voice_state_update(member, before, after):
+    if before.channel is not None:
+        await checkTempVoiceChannel(before, member)
+    if after.channel.id == VOICE_PORTAL_ID:
+        channel = client.get_channel(VOICE_CHANNEL_ID)
+        tempVoiceChannel = await channel.create_voice_channel(str(member))
+        tempVoiceChannels[member.id] = tempVoiceChannel.id
+        await member.move_to(tempVoiceChannel)
 
 
 @client.event
