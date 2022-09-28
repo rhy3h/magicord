@@ -113,7 +113,7 @@ async def checkTempVoiceChannel(before, member):
 async def on_voice_state_update(member, before, after):
     if before.channel is not None:
         await checkTempVoiceChannel(before, member)
-    if after.channel.id == VOICE_PORTAL_ID:
+    if after.channel is not None and after.channel.id == VOICE_PORTAL_ID:
         channel = client.get_channel(VOICE_CHANNEL_ID)
         tempVoiceChannel = await channel.create_voice_channel(str(member))
         tempVoiceChannels[member.id] = tempVoiceChannel.id
