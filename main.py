@@ -71,7 +71,7 @@ async def member_count_task():
     if today not in member_log_lines:
         print("更新人數")
         member_log_txt = open(member_log_path, 'a+')
-        member_log_txt.write(today)
+        member_log_txt.write(f"{today}\n")
         member_log_txt.close()
 
         numberOfMembersChannel = client.get_channel(MEMBER_NUNBER_ID)
