@@ -84,6 +84,11 @@ async def on_ready():
     member_count_task.start()
     live_notify_task.start()
 
+    voiceCategoryChannel = client.get_channel(VOICE_CHANNEL_ID)
+    for voiceChannel in voiceCategoryChannel.voice_channels:
+        if voiceChannel.id != VOICE_PORTAL_ID:
+            await voiceChannel.delete()
+
 
 @client.event
 async def on_member_join(member):
