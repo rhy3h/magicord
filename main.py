@@ -134,4 +134,13 @@ async def on_raw_reaction_add(payload):
         await payload.member.add_roles(role)
 
 
+@client.event
+async def on_raw_reaction_remove(payload):
+    if payload.message_id == configSettings["Discord"]["Channel_ID"]["ROLE_MESSAGE"]:
+        guild = client.get_guild(payload.guild_id)
+        role = guild.get_role(
+            configSettings["Discord"]["Channel_ID"]["TEST_ROLE"])
+        member = await guild.fetch_member(payload.user_id)
+        await member.remove_roles(role)
+
 client.run(configSettings["Discord"]["TOKEN"])
