@@ -1,18 +1,15 @@
-import os
-import dotenv
 import requests
 
-dotenv.load_dotenv()
+import json
 
-client_id = os.getenv('CLIENT_ID')
-client_secret = os.getenv('CLIENT_SECRET')
-streamer_name = os.getenv('STREAMER_NAME')
+with open('config.json', 'r') as file:
+    configSettings = json.load(file)
 
 
 def is_live():
     body = {
-        'client_id': client_id,
-        'client_secret': client_secret,
+        'client_id': configSettings["Live"]["CLIENT_ID"],
+        'client_secret': configSettings["Live"]["CLIENT_SECRET"],
         "grant_type": 'client_credentials'
     }
     r = requests.post(
@@ -23,12 +20,13 @@ def is_live():
     keys = r.json()
 
     headers = {
-        'Client-ID': client_id,
+        'Client-ID': configSettings["Live"]["CLIENT_ID"],
         'Authorization': 'Bearer ' + keys['access_token']
     }
 
     stream = requests.get(
-        'https://api.twitch.tv/helix/streams?user_login=' + streamer_name,
+        'https://api.twitch.tv/helix/streams?user_login=' +
+        configSettings["Live"]["STREAMER_NAME"],
         headers=headers
     )
 
