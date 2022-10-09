@@ -20,8 +20,9 @@ const client = new Client({
 client.on("ready", () => {
   console.log(`機器人 "${client.user.tag}" 運行了!`);
 
+  // Find voice portal id
   let portalVoiceChannelID = client.channels.cache.find(
-    (r) => r.name === "語音頻道"
+    (r) => r.name === config.Voice.Portal
   )?.id;
   // Find under teleport's voice channel
   let channels = client.channels.cache.filter(
