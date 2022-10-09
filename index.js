@@ -19,17 +19,18 @@ const client = new Client({
 client.on("ready", () => {
   console.log(`機器人 "${client.user.tag}" 運行了!`);
 
+  let portalVoiceChannelID = client.channels.cache.find(
+    (r) => r.name === "語音頻道"
+  )?.id;
   // 找尋傳送門底下的語音頻道
   let channels = client.channels.cache.filter(
     (c) =>
-      c.parentId == config.Voice.Channel && c.type == ChannelType.GuildVoice
+      c.name != config.Voice.Portal &&
+      c.parentId == portalVoiceChannelID &&
+      c.type == ChannelType.GuildVoice
   );
 
   channels.forEach(async (channel) => {
-    // 如果是傳送門就跳過
-    if (channel.name == config.Voice.Portal) {
-      return;
-    }
     // TODO: 判別語音頻道裡有沒有人
     // 刪除頻道
     await channel?.delete();
@@ -40,7 +41,7 @@ client.on("ready", () => {
 client.on("guildMemberAdd", (member) => {
   // 傳送訊息
   client.channels.cache
-    .get(config.Member.Add)
+    .find((r) => r.name === config.Member.Add)
     ?.send(`<@${member.user.id}> Welcome`);
 });
 
@@ -48,7 +49,7 @@ client.on("guildMemberAdd", (member) => {
 client.on("guildMemberRemove", (member) => {
   // 傳送訊息
   client.channels.cache
-    .get(config.Member.Remove)
+    .find((r) => r.name === config.Member.Remove)
     ?.send(`<@${member.user.id}> Left`);
 });
 
