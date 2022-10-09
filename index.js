@@ -16,14 +16,14 @@ const client = new Client({
   partials: [Partials.Message, Partials.Reaction],
 });
 
-// 機器人運行了
+// Discord bot on ready
 client.on("ready", () => {
   console.log(`機器人 "${client.user.tag}" 運行了!`);
 
   let portalVoiceChannelID = client.channels.cache.find(
     (r) => r.name === "語音頻道"
   )?.id;
-  // 找尋傳送門底下的語音頻道
+  // Find under teleport's voice channel
   let channels = client.channels.cache.filter(
     (c) =>
       c.name != config.Voice.Portal &&
@@ -32,8 +32,8 @@ client.on("ready", () => {
   );
 
   channels.forEach(async (channel) => {
-    // TODO: 判別語音頻道裡有沒有人
-    // 刪除頻道
+    // TODO: Judge voice channel have someone in
+    // Delete channel
     await channel?.delete();
   });
 
@@ -49,99 +49,101 @@ client.on("ready", () => {
         `https://www.twitch.tv/${streamNotify.user_login} ${streamNotify.user_name}開台了!`
       );
   };
-  // 機器人上線時先偵測一次
+  // When bot is online detect once
   detectStreamNotify();
-  // 固定每 1 分鐘偵測開台
+  // Then detect live every 1 mins
   setInterval(async () => {
     await detectStreamNotify();
   }, 1 * 60 * 1000);
 });
 
-// 成員進來
+// Member get in
 client.on("guildMemberAdd", (member) => {
-  // 傳送訊息
+  // Send message
   client.channels.cache
     .find((r) => r.name === config.Member.Add)
     ?.send(`<@${member.user.id}> Welcome`);
 });
 
-// 成員離開
+// Member leave out
 client.on("guildMemberRemove", (member) => {
-  // 傳送訊息
+  // Send message
   client.channels.cache
     .find((r) => r.name === config.Member.Remove)
     ?.send(`<@${member.user.id}> Left`);
 });
 
-// 這個功能要額外給一個空的身份組, 不然會有權限問題, 不確定原因為何
+// This function need to give an addictional empty role, 
+// otherwise will have permission error, not sure why
 client.on("messageReactionAdd", async (reaction, user) => {
   if (reaction.message.id == config.Role.Message) {
-    // 找到身份組
+    // Find role
     const role = reaction.message.guild.roles.cache?.find(
       (r) => r.name === config.Role.GiveRole
     );
-    // 找到成員
+    // Find member
     const member = reaction.message.guild.members.cache?.find(
       (member) => member.id === user.id
     );
-    // 給予身份組
+    // Give role
     try {
       member.roles?.add(role);
     } catch (err) {
-      // 有可能遇到權限問題
+      // Might have permission error
       console.error(err);
     }
   }
 });
 
-// 這個功能要額外給一個空的身份組, 不然會有權限問題, 不確定原因為何
+// This function need to give an addictional empty role, 
+// otherwise will have permission error, not sure why
 client.on("messageReactionRemove", async (reaction, user) => {
   if (reaction.message.id == config.Role.Message) {
-    // 找到身份組
+    // Find role
     const role = reaction.message.guild.roles.cache?.find(
       (r) => r.name === config.Role.GiveRole
     );
-    // 找到成員
+    // Find member
     const member = reaction.message.guild.members.cache?.find(
       (member) => member.id === user.id
     );
-    // 移除身份組
+    // Remove role
     try {
       member.roles?.remove(role);
     } catch (err) {
-      // 有可能遇到權限問題
+      // Might have permission error
       console.error(err);
     }
   }
 });
 
-// 傳送門
+// Voice channl portal
 var createdVoicePortal = {};
 client.on("voiceStateUpdate", async (oldState, newState) => {
-  // 離開自己的暫時頻道
+  // Live own temporary channel
   if (oldState.channel && createdVoicePortal[oldState.member.id]) {
-    // 刪除頻道
+    // Delete channel
     await oldState.channel?.delete();
-    // 刪除記錄
+    // Delete record
     delete createdVoicePortal[oldState.member.id];
   }
-  // 進到傳送門
+  // Get in voice channel portal
   if (newState.channel && newState.channel.name == config.Voice.Portal) {
-    // 使用者名稱
+    // User name
     let username = newState.member.user.username;
-    // 使用者ID
+    // User ID
     let discriminator = newState.member.user.discriminator;
-    // 新的頻道名稱
+    // New channel name
     let newChannelName = `${username}#${discriminator}`;
-    // 新的暫時頻道
+    // New temporary channel
     let tempVoiceChannel = await newState.guild.channels?.create({
       parent: newState?.channel?.parent,
       type: ChannelType.GuildVoice,
       name: newChannelName,
     });
-    // 連線到新的暫時頻道
+    // Move member to temporary channel
     await newState.member.voice?.setChannel(tempVoiceChannel);
-    // 記錄起來
+    // Record it
     createdVoicePortal[newState.member.user.id] = true;
   }
 });
