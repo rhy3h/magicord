@@ -1,5 +1,6 @@
 import { Client, GatewayIntentBits, Partials, ChannelType } from "discord.js";
 import * as fs from "fs";
+import { getStreamNotify } from "./utils/twitch/live.js";
 
 let configJson = fs.readFileSync("./config.json");
 let config = JSON.parse(configJson);

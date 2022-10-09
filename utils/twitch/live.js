@@ -66,4 +66,4 @@ async function getStreamNotify() {
   return stream[0];
 }
 
-export default getStreamNotify;
+export { getStreamNotify };
