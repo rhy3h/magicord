@@ -35,6 +35,25 @@ client.on("ready", () => {
     // 刪除頻道
     await channel?.delete();
   });
+
+  let detectStreamNotify = async () => {
+    let streamNotify = await getStreamNotify();
+    if (!streamNotify) {
+      return;
+    }
+
+    client.channels.cache
+      .find((r) => r.name === config.Live.Message)
+      ?.send(
+        `https://www.twitch.tv/${streamNotify.user_login} ${streamNotify.user_name}開台了!`
+      );
+  };
+  // 機器人上線時先偵測一次
+  detectStreamNotify();
+  // 固定每 1 分鐘偵測開台
+  setInterval(async () => {
+    await detectStreamNotify();
+  }, 1 * 60 * 1000);
 });
 
 // 成員進來
