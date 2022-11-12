@@ -37,4 +37,16 @@ client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
   await client.portVoiceChannel(oldState, newState);
 });
 
+// Commands
+client.on(Events.InteractionCreate, async (interaction) => {
+  // Slash Commands
+  if (interaction.isChatInputCommand()) {
+    client.executeChatInputCommand(interaction);
+  }
+  // Select
+  if (interaction.isSelectMenu()) {
+    client.executeSelectMenu(interaction);
+  }
+});
+
 client.login(token);

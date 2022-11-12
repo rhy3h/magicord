@@ -1,18 +1,26 @@
 import {
   ChannelType,
+  ChatInputCommandInteraction,
   Client,
   ClientOptions,
   Collection,
   GuildMember,
   PartialGuildMember,
+  SelectMenuInteraction,
+  SlashCommandBuilder,
   TextChannel,
   VoiceState,
 } from "discord.js";
+import fs from "fs/promises";
+import path from "path";
+
+import { SlashCommand } from "../components/SlashCommand";
+import { Setting } from "../components/Setting";
 import { TwitchLive, TwitchStatus } from "../twitch/index";
+
 import { client_id, client_secret } from "../twitch/config.json";
 import * as channels from "../channel.json";
 import * as history from "./history.json";
-import fs from "fs/promises";
 
 interface IChannel {
   memberAdd: string;
@@ -24,6 +32,7 @@ interface IChannel {
 }
 
 class DcClient extends Client {
+  public commands: Collection<string, SlashCommandBuilder>;
   private portals: Collection<string, boolean>;
   private channelDatas: Collection<string, IChannel>;
   private hisotryDatas: Collection<string, Array<string>>;
@@ -32,13 +41,35 @@ class DcClient extends Client {
   constructor(options: ClientOptions) {
     super(options);
 
+    this.commands = new Collection();
     this.portals = new Collection();
     this.channelDatas = new Collection();
     this.hisotryDatas = new Collection();
     this.twitchLive = new TwitchLive(client_id, client_secret);
 
+    this.initCommands();
+
     this.getChannelFromJson();
     this.getHistoryFromJson();
+  }
+
+  private async initCommands() {
+    const commandsPath = path.join(__dirname, "../commands");
+    const commandFiles = (await fs.readdir(commandsPath)).filter((file) =>
+      file.endsWith(".js")
+    );
+
+    for (const file of commandFiles) {
+      const filePath = path.join(commandsPath, file);
+      const command = require(filePath);
+      if ("name" in command && "execute" in command) {
+        this.commands.set(command.name, command);
+      } else {
+        console.log(
+          `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+        );
+      }
+    }
   }
 
   private getChannelFromJson() {
@@ -180,6 +211,47 @@ class DcClient extends Client {
         fs.writeFile("./src/utilities/history.json", historyJson);
       });
   }
+
+  public executeChatInputCommand(interaction: ChatInputCommandInteraction) {
+    if (!interaction.guildId) {
+      return;
+    }
+
+    const channelData = <IChannel>this.channelDatas.get(interaction.guildId);
+    const slashCommand = <SlashCommand>(
+      this.commands.get(interaction.commandName)
+    );
+    slashCommand?.execute(interaction, channelData);
+  }
+
+  public async executeSelectMenu(interaction: SelectMenuInteraction) {
+    if (!interaction.guildId) {
+      return;
+    }
+
+    const channelData = <IChannel>this.channelDatas.get(interaction.guildId);
+    const value = interaction.values[0];
+    switch (interaction.customId) {
+      case "member_add": {
+        channelData.memberAdd = value;
+        break;
+      }
+      case "member_remove": {
+        channelData.memberRemove = value;
+        break;
+      }
+      case "stream_notify": {
+        channelData.liveMessage = value;
+        break;
+      }
+    }
+    this.channelDatas.set(interaction.guildId, channelData);
+
+    const component = new Setting(interaction, channelData);
+    await interaction.update({
+      embeds: component.embed,
+    });
+  }
 }
 
-export { DcClient };
+export { DcClient, IChannel };
