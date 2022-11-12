@@ -74,7 +74,7 @@ class TwitchLive {
       let stream = <any>(
         await this.getStream(result.access_token, streamer_name)
       );
-      if (stream.length == 0) {
+      if (!stream || stream?.length == 0) {
         resolve(null);
         return;
       }
