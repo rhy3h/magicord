@@ -251,6 +251,9 @@ class DcClient extends Client {
     await interaction.update({
       embeds: component.embed,
     });
+
+    const channelJson = JSON.stringify(Object.fromEntries(this.channelDatas));
+    fs.writeFile("./src/channel.json", channelJson);
   }
 }
 
