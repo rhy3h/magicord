@@ -64,7 +64,7 @@ class DcClient extends Client {
     const memberAddChannel = <TextChannel>(
       member.client.channels.cache.get(channelID)
     );
-    memberAddChannel?.send(`<@${member.user.id}> Welcome`);
+    memberAddChannel?.send(`<@${member.user.id}> Welcome`).catch(() => {});
   }
 
   public guildMemberRemove(member: GuildMember | PartialGuildMember) {
@@ -73,7 +73,7 @@ class DcClient extends Client {
     const memberRemoveChannel = <TextChannel>(
       member.client.channels.cache.get(channelID)
     );
-    memberRemoveChannel?.send(`<@${member.user.id}> Left`);
+    memberRemoveChannel?.send(`<@${member.user.id}> Left`).catch(() => {});
   }
 
   public clearPortal() {
@@ -119,13 +119,18 @@ class DcClient extends Client {
       // New voice channel name
       const portalName = `${username}#${discriminator}`;
       // Create portal voice channel
-      const voicePoral = await newState.guild.channels?.create({
-        parent: newState?.channel?.parent,
-        type: ChannelType.GuildVoice,
-        name: portalName,
-      });
+      const voicePoral = await newState.guild.channels
+        ?.create({
+          parent: newState?.channel?.parent,
+          type: ChannelType.GuildVoice,
+          name: portalName,
+        })
+        .catch(() => {});
+      if (!voicePoral) {
+        return;
+      }
       // Move member to temporary channel
-      await newState.member.voice?.setChannel(voicePoral);
+      await newState.member.voice?.setChannel(voicePoral).catch(() => {});
       // Record it
       this.portals.set(newState.member.user.id, true);
     }
@@ -156,9 +161,11 @@ class DcClient extends Client {
             server?.channels.cache.get(channelID)
           );
           // TODO: Embed text, and custom content
-          liveMessageChannel?.send(
-            `https://www.twitch.tv/${streamStatus.user_login} ${streamStatus.user_name} 開台了!`
-          );
+          liveMessageChannel
+            ?.send(
+              `https://www.twitch.tv/${streamStatus.user_login} ${streamStatus.user_name} 開台了!`
+            )
+            .catch(() => {});
           resolve(true);
         })
       );
