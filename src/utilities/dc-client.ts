@@ -56,7 +56,7 @@ class DcClient extends Client {
   private async initCommands() {
     const commandsPath = path.join(__dirname, "../commands");
     const commandFiles = (await fs.readdir(commandsPath)).filter((file) =>
-      file.endsWith(".js")
+      file.endsWith(".ts")
     );
 
     for (const file of commandFiles) {
