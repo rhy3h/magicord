@@ -1,4 +1,4 @@
-import { Events, GatewayIntentBits } from "discord.js";
+import { Events, GatewayIntentBits, PermissionsBitField } from "discord.js";
 import { token } from "./config.json";
 import { DcClient } from "./utilities/dc-client";
 
@@ -39,6 +39,13 @@ client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
 
 // Commands
 client.on(Events.InteractionCreate, async (interaction) => {
+  const memberPermision = interaction.memberPermissions?.has(
+    PermissionsBitField.Flags.Administrator
+  );
+  if (!memberPermision) {
+    return;
+  }
+
   // Slash Commands
   if (interaction.isChatInputCommand()) {
     client.executeChatInputCommand(interaction);
