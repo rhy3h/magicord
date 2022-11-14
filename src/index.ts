@@ -54,6 +54,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isSelectMenu()) {
     client.executeSelectMenu(interaction);
   }
+  // Button
+  if (interaction.isButton()) {
+    await client.executeButton(interaction);
+  }
 });
 
 client.login(token);

@@ -1,5 +1,7 @@
 import {
   ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   ChannelType,
   EmbedBuilder,
   Interaction,
@@ -21,7 +23,7 @@ class ChannelInfo {
 class Setting {
   private channelData: IChannel;
 
-  public row: Array<ActionRowBuilder<SelectMenuBuilder>>;
+  public row: Array<ActionRowBuilder<SelectMenuBuilder | ButtonBuilder>>;
   public embed: Array<EmbedBuilder>;
   private channelList: Array<ChannelInfo>;
 
@@ -70,7 +72,22 @@ class Setting {
           .addOptions(this.channelList)
       );
 
-    return [memberAddRow, memberRemoveRow, streamNotifyRow];
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId("member_add_button")
+        .setLabel("進來")
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId("member_remove_button")
+        .setLabel("離開")
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId("stream_notify_button")
+        .setLabel("開台")
+        .setStyle(ButtonStyle.Primary)
+    );
+
+    return [memberAddRow, memberRemoveRow, streamNotifyRow, buttonRow];
   }
 
   private createEmbed() {

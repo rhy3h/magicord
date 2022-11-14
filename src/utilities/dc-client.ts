@@ -1,4 +1,5 @@
 import {
+  ButtonInteraction,
   ChannelType,
   ChatInputCommandInteraction,
   Client,
@@ -256,6 +257,41 @@ class DcClient extends Client {
 
     const channelJson = JSON.stringify(Object.fromEntries(this.channelDatas));
     fs.writeFile("./src/channel.json", channelJson);
+  }
+
+  public async executeButton(interaction: ButtonInteraction) {
+    if (!interaction.guildId) {
+      return;
+    }
+
+    await interaction.deferReply();
+
+    const channelData = <IChannel>this.channelDatas.get(interaction.guildId);
+    switch (interaction.customId) {
+      case "member_add_button": {
+        const memberAddChannel = <TextChannel>(
+          interaction.client.channels.cache.get(channelData.memberAdd)
+        );
+        await memberAddChannel?.send(`Member add test`).catch(() => {});
+        break;
+      }
+      case "member_remove_button": {
+        const memberRemoveChannel = <TextChannel>(
+          interaction.client.channels.cache.get(channelData.memberRemove)
+        );
+        await memberRemoveChannel?.send(`Member remove test`).catch(() => {});
+        break;
+      }
+      case "stream_notify_button": {
+        const streamNotifyChannel = <TextChannel>(
+          interaction.client.channels.cache.get(channelData.liveMessage)
+        );
+        await streamNotifyChannel?.send(`Member remove test`).catch(() => {});
+        break;
+      }
+    }
+
+    await interaction.deleteReply();
   }
 }
 
