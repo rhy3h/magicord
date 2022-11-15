@@ -75,12 +75,33 @@ class DcClient extends Client {
     console.log("");
   }
 
+  public initChannelData() {
+    this.guilds.cache.forEach((guild) => {
+      const { id } = guild;
+      if (this.channelDatas.get(id)) {
+        return;
+      }
+      const channelData: IChannel = {
+        memberAdd: "",
+        memberRemove: "",
+        liveMessage: "",
+        voiceCategory: "",
+        voicePortal: "",
+        streamName: "",
+      };
+      this.channelDatas.set(id, channelData);
+    });
+
+    const channelJson = JSON.stringify(Object.fromEntries(this.channelDatas));
+    fs.writeFile("./src/channel.json", channelJson);
+  }
+
   private getChannelFromJson() {
     Object.entries(channels).forEach(([key, data], index) => {
       if (key == "default") {
         return;
       }
-      this.channelDatas.set(key, data);
+      this.channelDatas.set(key, <IChannel>data);
     });
   }
 
