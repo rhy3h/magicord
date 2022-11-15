@@ -128,7 +128,4 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-src/channel.json
-src/config.json
-src/twitch/config.json
 src/utilities/history.json
