@@ -38,10 +38,10 @@ class Setting {
   }
 
   private initChannelList(interaction: Interaction) {
-    let channels = interaction.client.guilds.client.channels.cache.filter(
+    let channels = interaction.guild?.channels.cache.filter(
       (r) => r.type == ChannelType.GuildText
     );
-    channels.forEach((channel) => {
+    channels?.forEach((channel) => {
       const channelNode = <TextChannel>channel;
       this.channelList.push(new ChannelInfo(channelNode.id, channelNode.name));
     });
@@ -92,13 +92,13 @@ class Setting {
 
   private createEmbed() {
     const memberAdd = this.channelList.find(
-      (c) => c.value == this.channelData.memberAdd
+      (c) => c.value == this.channelData?.memberAdd
     );
     const memberRemove = this.channelList.find(
-      (c) => c.value == this.channelData.memberRemove
+      (c) => c.value == this.channelData?.memberRemove
     );
     const notifyStream = this.channelList.find(
-      (c) => c.value == this.channelData.liveMessage
+      (c) => c.value == this.channelData?.liveMessage
     );
     const notifyEmbed = new EmbedBuilder()
       .setColor(0x0099ff)
