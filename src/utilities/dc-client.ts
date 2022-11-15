@@ -29,6 +29,7 @@ interface IChannel {
   liveMessage: string;
   voiceCategory: string;
   voicePortal: string;
+  updateMember: string;
   streamName: string;
 }
 
@@ -87,6 +88,7 @@ class DcClient extends Client {
         liveMessage: "",
         voiceCategory: "",
         voicePortal: "",
+        updateMember: "",
         streamName: "",
       };
       this.channelDatas.set(id, channelData);
@@ -94,6 +96,20 @@ class DcClient extends Client {
 
     const channelJson = JSON.stringify(Object.fromEntries(this.channelDatas));
     fs.writeFile("./src/channel.json", channelJson);
+  }
+
+  public updateMember() {
+    this.guilds.cache.forEach((guild) => {
+      const { id } = guild;
+      if (!this.channelDatas.get(id)) {
+        return;
+      }
+      const channelData = this.channelDatas.get(id);
+      if (channelData?.updateMember) {
+        const channel = guild.channels.cache.get(channelData?.updateMember);
+        channel?.setName(`人數: ${guild.memberCount}`);
+      }
+    });
   }
 
   private getChannelFromJson() {

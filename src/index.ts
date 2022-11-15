@@ -15,6 +15,7 @@ const client = new DcClient({
 client.once(Events.ClientReady, async () => {
   console.log(`Discord Bot "${client.user?.tag}" is ready!`);
   client.initChannelData();
+  client.updateMember();
   client.clearPortal();
   await client.notifyStream();
   setInterval(async () => {
