@@ -7,7 +7,6 @@ import {
   Collection,
   GuildMember,
   PartialGuildMember,
-  SelectMenuInteraction,
   SlashCommandBuilder,
   TextChannel,
   VoiceChannel,
@@ -17,7 +16,6 @@ import fs from "fs/promises";
 import path from "path";
 
 import { SlashCommand } from "../components/SlashCommand";
-import { Setting } from "../components/Setting";
 import { TwitchLive, TwitchStatus } from "../twitch/index";
 
 import { client_id, client_secret } from "../twitch/config.json";
@@ -27,10 +25,16 @@ import * as history from "./history.json";
 interface IChannel {
   memberAdd: string;
   memberRemove: string;
-  liveMessage: string;
+  memberCount: string;
   voicePortal: string;
-  updateMember: string;
-  streamName: string;
+  stream: {
+    channelID: string;
+    name: string;
+  };
+  role: {
+    roleID: string;
+    messageID: string;
+  };
 }
 
 class DcClient extends Client {
@@ -85,10 +89,16 @@ class DcClient extends Client {
       const channelData: IChannel = {
         memberAdd: "",
         memberRemove: "",
-        liveMessage: "",
         voicePortal: "",
-        updateMember: "",
-        streamName: "",
+        memberCount: "",
+        stream: {
+          channelID: "",
+          name: "",
+        },
+        role: {
+          roleID: "",
+          messageID: "",
+        },
       };
       this.channelDatas.set(id, channelData);
     });
@@ -104,8 +114,8 @@ class DcClient extends Client {
         return;
       }
       const channelData = this.channelDatas.get(id);
-      if (channelData?.updateMember) {
-        const channel = guild.channels.cache.get(channelData?.updateMember);
+      if (channelData?.memberCount) {
+        const channel = guild.channels.cache.get(channelData?.memberCount);
         channel?.setName(`人數: ${guild.memberCount}`);
       }
     });
@@ -216,7 +226,7 @@ class DcClient extends Client {
       promises.push(
         new Promise(async (resolve, reject) => {
           let streamStatus = <TwitchStatus>(
-            await this.twitchLive.getStreamNotify(channel.streamName)
+            await this.twitchLive.getStreamNotify(channel.stream.name)
           );
           if (!streamStatus) {
             reject(false);
@@ -230,12 +240,12 @@ class DcClient extends Client {
           }
           this.hisotryDatas.get(guild)?.push(streamStatus?.started_at);
           const server = this.guilds.cache.get(guild);
-          const channelID = channel.liveMessage;
-          const liveMessageChannel = <TextChannel>(
+          const channelID = channel.stream.channelID;
+          const streamNotifyChannel = <TextChannel>(
             server?.channels.cache.get(channelID)
           );
           // TODO: Embed text, and custom content
-          liveMessageChannel
+          streamNotifyChannel
             ?.send(
               `https://www.twitch.tv/${streamStatus.user_login} ${streamStatus.user_name} 開台了!`
             )
@@ -255,62 +265,27 @@ class DcClient extends Client {
       });
   }
 
-  public executeChatInputCommand(interaction: ChatInputCommandInteraction) {
+  public async executeChatInputCommand(
+    interaction: ChatInputCommandInteraction
+  ) {
     if (!interaction.guildId) {
       return;
     }
+
+    await interaction.deferReply();
 
     const channelData = <IChannel>this.channelDatas.get(interaction.guildId);
     const slashCommand = <SlashCommand>(
       this.commands.get(interaction.commandName)
     );
+
     slashCommand?.execute(interaction, channelData);
-  }
 
-  public async executeSelectMenu(interaction: SelectMenuInteraction) {
-    if (!interaction.guildId) {
-      return;
-    }
-
-    const channelData = <IChannel>this.channelDatas.get(interaction.guildId);
-    const value = interaction.values[0];
-    switch (interaction.customId) {
-      case "member_add": {
-        channelData.memberAdd = value;
-        break;
-      }
-      case "member_remove": {
-        channelData.memberRemove = value;
-        break;
-      }
-      case "stream_notify": {
-        channelData.liveMessage = value;
-        break;
-      }
-      case "portal_voice": {
-        channelData.voicePortal = value;
-        break;
-      }
-      case "update_memeber": {
-        channelData.updateMember = value;
-        break;
-      }
-      default: {
-        console.log(
-          `[WARNING]: Unknow select menu id '${interaction.customId}'`
-        );
-        break;
-      }
-    }
     this.channelDatas.set(interaction.guildId, channelData);
-
-    const component = new Setting(interaction, channelData);
-    await interaction.update({
-      embeds: component.embed,
-    });
-
     const channelJson = JSON.stringify(Object.fromEntries(this.channelDatas));
     fs.writeFile("./src/channel.json", channelJson);
+
+    await interaction.deleteReply();
   }
 
   public async executeButton(interaction: ButtonInteraction) {
@@ -338,14 +313,14 @@ class DcClient extends Client {
       }
       case "stream_notify_button": {
         const streamNotifyChannel = <TextChannel>(
-          interaction.client.channels.cache.get(channelData.liveMessage)
+          interaction.client.channels.cache.get(channelData.stream.channelID)
         );
         await streamNotifyChannel?.send(`Member remove test`).catch(() => {});
         break;
       }
       case "update_member_button": {
         const updateMemberChannel = <VoiceChannel>(
-          interaction.client.channels.cache.get(channelData.updateMember)
+          interaction.client.channels.cache.get(channelData.memberCount)
         );
         await updateMemberChannel?.send(`Update Member test`).catch(() => {});
         break;
