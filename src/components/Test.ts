@@ -65,6 +65,10 @@ class Test {
       new ButtonBuilder()
         .setCustomId("stream_notify_button")
         .setLabel("開台")
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId("update_member_button")
+        .setLabel("更新人數")
         .setStyle(ButtonStyle.Primary)
     );
 
