@@ -271,21 +271,30 @@ class DcClient extends Client {
     if (!interaction.guildId) {
       return;
     }
-
-    await interaction.deferReply();
-
     const channelData = <IChannel>this.channelDatas.get(interaction.guildId);
     const slashCommand = <SlashCommand>(
       this.commands.get(interaction.commandName)
     );
+    switch (interaction.commandName) {
+      case "setting": {
+        await interaction.deferReply();
 
-    slashCommand?.execute(interaction, channelData);
+        slashCommand?.execute(interaction, channelData);
 
-    this.channelDatas.set(interaction.guildId, channelData);
-    const channelJson = JSON.stringify(Object.fromEntries(this.channelDatas));
-    fs.writeFile("./src/channel.json", channelJson);
+        this.channelDatas.set(interaction.guildId, channelData);
+        const channelJson = JSON.stringify(
+          Object.fromEntries(this.channelDatas)
+        );
+        fs.writeFile("./src/channel.json", channelJson);
 
-    await interaction.deleteReply();
+        await interaction.deleteReply();
+        break;
+      }
+      case "test": {
+        slashCommand?.execute(interaction, channelData);
+        break;
+      }
+    }
   }
 
   public async executeButton(interaction: ButtonInteraction) {
