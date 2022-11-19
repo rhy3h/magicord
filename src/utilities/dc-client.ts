@@ -10,6 +10,7 @@ import {
   SelectMenuInteraction,
   SlashCommandBuilder,
   TextChannel,
+  VoiceChannel,
   VoiceState,
 } from "discord.js";
 import fs from "fs/promises";
@@ -27,7 +28,6 @@ interface IChannel {
   memberAdd: string;
   memberRemove: string;
   liveMessage: string;
-  voiceCategory: string;
   voicePortal: string;
   updateMember: string;
   streamName: string;
@@ -86,7 +86,6 @@ class DcClient extends Client {
         memberAdd: "",
         memberRemove: "",
         liveMessage: "",
-        voiceCategory: "",
         voicePortal: "",
         updateMember: "",
         streamName: "",
@@ -147,22 +146,26 @@ class DcClient extends Client {
     memberRemoveChannel?.send(`<@${member.user.id}> Left`).catch(() => {});
   }
 
-  public clearPortal() {
+  public async clearPortal() {
+    const promises: Promise<VoiceChannel>[] = [];
+
     this.channelDatas.forEach((channelData, guildId) => {
       const guild = this.guilds.cache.get(guildId);
-      const category = guild?.channels.cache.get(channelData.voiceCategory);
+      const voicePortal = guild?.channels.cache.get(channelData.voicePortal);
+
       const portalChannels = guild?.channels.cache.filter((c) => {
         return (
           c.type == ChannelType.GuildVoice &&
-          c.parentId == category?.id &&
+          c.parentId == voicePortal?.parentId &&
           c.id != channelData.voicePortal
         );
       });
-      // TODO: Promise all
       portalChannels?.forEach(async (portalChannel) => {
-        await portalChannel.delete();
+        promises.push((<VoiceChannel>portalChannel).delete());
       });
     });
+
+    await Promise.all(promises);
   }
 
   public async portVoiceChannel(oldState: VoiceState, newState: VoiceState) {

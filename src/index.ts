@@ -13,15 +13,15 @@ const client = new DcClient({
 
 // Discord bot on ready
 client.once(Events.ClientReady, async () => {
-  console.log(`Discord Bot "${client.user?.tag}" is ready!`);
   client.initChannelData();
   client.updateMember();
-  client.clearPortal();
-  await client.notifyStream();
+  await client.clearPortal();
   setInterval(async () => {
     // Every 1 minutes detect once
     await client.notifyStream();
   }, 1 * 60 * 1000);
+
+  console.log(`Discord Bot "${client.user?.tag}" is ready!`);
 });
 
 // Member get in
