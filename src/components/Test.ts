@@ -5,7 +5,6 @@ import {
   ChannelType,
   EmbedBuilder,
   Interaction,
-  SelectMenuBuilder,
 } from "discord.js";
 import { IChannel } from "../utilities/dc-client";
 
