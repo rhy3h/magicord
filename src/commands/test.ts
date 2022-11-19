@@ -6,7 +6,10 @@ import { IChannel } from "../utilities/dc-client";
 class TestCommand extends SlashCommand {
   constructor() {
     super();
-    this.setName("test").setDescription("Just a test");
+    this.setName("test")
+      .setNameLocalizations({ "zh-TW": "測試" })
+      .setDescription("Just a test")
+      .setDescriptionLocalizations({ "zh-TW": "就是測試" });
   }
 
   public async execute(

@@ -10,20 +10,28 @@ class SettingCommand extends SlashCommand {
   constructor() {
     super();
     this.setName("setting")
+      .setNameLocalizations({ "zh-TW": "設定" })
       .setDescription("Just setting")
+      .setDescriptionLocalizations({ "zh-TW": "就是設定" })
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
       .addSubcommandGroup((group) =>
         group
           .setName("member")
+          .setNameLocalizations({ "zh-TW": "成員" })
           .setDescription("Member")
+          .setDescriptionLocalizations({ "zh-TW": "成員" })
           .addSubcommand((subcommand) =>
             subcommand
               .setName("add")
+              .setNameLocalizations({ "zh-TW": "進入" })
               .setDescription("Member get in")
+              .setDescriptionLocalizations({ "zh-TW": "就是成員進入" })
               .addChannelOption((option) =>
                 option
                   .setName("channel")
+                  .setNameLocalizations({ "zh-TW": "頻道" })
                   .setDescription("Text Channel")
+                  .setDescriptionLocalizations({ "zh-TW": "文字頻道" })
                   .addChannelTypes(ChannelType.GuildText)
                   .setRequired(true)
               )
@@ -31,11 +39,15 @@ class SettingCommand extends SlashCommand {
           .addSubcommand((subcommand) =>
             subcommand
               .setName("remove")
+              .setNameLocalizations({ "zh-TW": "離開" })
               .setDescription("Member get out")
+              .setDescriptionLocalizations({ "zh-TW": "就是成員離開" })
               .addChannelOption((option) =>
                 option
                   .setName("channel")
+                  .setNameLocalizations({ "zh-TW": "頻道" })
                   .setDescription("Text Channel")
+                  .setDescriptionLocalizations({ "zh-TW": "文字頻道" })
                   .addChannelTypes(ChannelType.GuildText)
                   .setRequired(true)
               )
@@ -43,11 +55,15 @@ class SettingCommand extends SlashCommand {
           .addSubcommand((subcommand) =>
             subcommand
               .setName("count")
+              .setNameLocalizations({ "zh-TW": "人數" })
               .setDescription("Just member count")
+              .setDescriptionLocalizations({ "zh-TW": "就是頻道人數" })
               .addChannelOption((option) =>
                 option
                   .setName("channel")
+                  .setNameLocalizations({ "zh-TW": "頻道" })
                   .setDescription("Voice Channel")
+                  .setDescriptionLocalizations({ "zh-TW": "人數更新語音頻道" })
                   .addChannelTypes(ChannelType.GuildVoice)
                   .setRequired(true)
               )
@@ -56,30 +72,44 @@ class SettingCommand extends SlashCommand {
       .addSubcommandGroup((group) =>
         group
           .setName("stream")
+          .setNameLocalizations({ "zh-TW": "實況" })
           .setDescription("Stream")
+          .setDescriptionLocalizations({ "zh-TW": "實況" })
           .addSubcommand((subcommand) =>
             subcommand
               .setName("notify")
+              .setNameLocalizations({ "zh-TW": "實況通知" })
               .setDescription("Just stream notify")
+              .setDescriptionLocalizations({ "zh-TW": "就是實況通知" })
               .addChannelOption((option) =>
                 option
                   .setName("channel")
+                  .setNameLocalizations({ "zh-TW": "頻道" })
                   .setDescription("Notify text channel")
+                  .setDescriptionLocalizations({ "zh-TW": "實況通知頻道" })
                   .addChannelTypes(ChannelType.GuildText)
               )
               .addStringOption((option) =>
-                option.setName("streamname").setDescription("Streamer Name")
+                option
+                  .setName("streamname")
+                  .setNameLocalizations({ "zh-TW": "實況主名稱" })
+                  .setDescription("Streamer Name")
+                  .setDescriptionLocalizations({ "zh-TW": "實況主名稱" })
               )
           )
       )
       .addSubcommand((subcommand) =>
         subcommand
           .setName("portal")
+          .setNameLocalizations({ "zh-TW": "語音傳送門" })
           .setDescription("Just portal")
+          .setDescriptionLocalizations({ "zh-TW": "就是語音傳送門" })
           .addChannelOption((option) =>
             option
               .setName("channel")
+              .setNameLocalizations({ "zh-TW": "頻道" })
               .setDescription("Voice Channel")
+              .setDescriptionLocalizations({ "zh-TW": "語音頻道" })
               .addChannelTypes(ChannelType.GuildVoice)
               .setRequired(true)
           )
@@ -87,15 +117,24 @@ class SettingCommand extends SlashCommand {
       .addSubcommand((subcommand) =>
         subcommand
           .setName("role")
+          .setNameLocalizations({ "zh-TW": "身分組" })
           .setDescription("Just Role")
+          .setDescriptionLocalizations({ "zh-TW": "就是身分組" })
           .addIntegerOption((option) =>
             option
               .setName("message")
+              .setNameLocalizations({ "zh-TW": "回應訊息" })
               .setDescription("Message ID")
+              .setDescriptionLocalizations({ "zh-TW": "回應訊息的 ID" })
               .setRequired(true)
           )
           .addRoleOption((option) =>
-            option.setName("role").setDescription("Just role").setRequired(true)
+            option
+              .setName("role")
+              .setNameLocalizations({ "zh-TW": "身分組" })
+              .setDescription("Just role")
+              .setDescriptionLocalizations({ "zh-TW": "就是身分組" })
+              .setRequired(true)
           )
       );
   }
