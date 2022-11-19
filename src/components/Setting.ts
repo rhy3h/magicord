@@ -6,7 +6,6 @@ import {
   EmbedBuilder,
   Interaction,
   SelectMenuBuilder,
-  TextChannel,
 } from "discord.js";
 import { IChannel } from "../utilities/dc-client";
 
@@ -25,12 +24,14 @@ class Setting {
 
   public row: Array<ActionRowBuilder<SelectMenuBuilder | ButtonBuilder>>;
   public embed: Array<EmbedBuilder>;
-  private channelList: Array<ChannelInfo>;
+  private textChannelList: Array<ChannelInfo>;
+  private voiceChannelList: Array<ChannelInfo>;
 
   constructor(interaction: Interaction, channelData: IChannel) {
     this.channelData = channelData;
 
-    this.channelList = [];
+    this.textChannelList = [];
+    this.voiceChannelList = [];
     this.initChannelList(interaction);
 
     this.row = this.createRow();
@@ -38,12 +39,17 @@ class Setting {
   }
 
   private initChannelList(interaction: Interaction) {
-    let channels = interaction.guild?.channels.cache.filter(
-      (r) => r.type == ChannelType.GuildText
-    );
+    const channels = interaction.guild?.channels.cache.filter((r) => {
+      return (
+        r.type == ChannelType.GuildText || r.type == ChannelType.GuildVoice
+      );
+    });
     channels?.forEach((channel) => {
-      const channelNode = <TextChannel>channel;
-      this.channelList.push(new ChannelInfo(channelNode.id, channelNode.name));
+      if (channel.type == ChannelType.GuildText) {
+        this.textChannelList.push(new ChannelInfo(channel.id, channel.name));
+      } else if (channel.type == ChannelType.GuildVoice) {
+        this.voiceChannelList.push(new ChannelInfo(channel.id, channel.name));
+      }
     });
   }
 
@@ -53,7 +59,7 @@ class Setting {
         new SelectMenuBuilder()
           .setCustomId("member_add")
           .setPlaceholder("進來通知")
-          .addOptions(this.channelList)
+          .addOptions(this.textChannelList)
       );
 
     const memberRemoveRow =
@@ -61,7 +67,7 @@ class Setting {
         new SelectMenuBuilder()
           .setCustomId("member_remove")
           .setPlaceholder("離開通知")
-          .addOptions(this.channelList)
+          .addOptions(this.textChannelList)
       );
 
     const streamNotifyRow =
@@ -69,37 +75,51 @@ class Setting {
         new SelectMenuBuilder()
           .setCustomId("stream_notify")
           .setPlaceholder("開台通知")
-          .addOptions(this.channelList)
+          .addOptions(this.textChannelList)
       );
 
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId("member_add_button")
-        .setLabel("進來")
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId("member_remove_button")
-        .setLabel("離開")
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId("stream_notify_button")
-        .setLabel("開台")
-        .setStyle(ButtonStyle.Primary)
-    );
+    const portalVoiceRow =
+      new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+        new SelectMenuBuilder()
+          .setCustomId("portal_voice")
+          .setPlaceholder("語音傳送門")
+          .addOptions(this.voiceChannelList)
+      );
 
-    return [memberAddRow, memberRemoveRow, streamNotifyRow, buttonRow];
+    const updateMemberRow =
+      new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+        new SelectMenuBuilder()
+          .setCustomId("update_memeber")
+          .setPlaceholder("更新人數")
+          .addOptions(this.voiceChannelList)
+      );
+
+    return [
+      memberAddRow,
+      memberRemoveRow,
+      streamNotifyRow,
+      portalVoiceRow,
+      updateMemberRow,
+    ];
   }
 
   private createEmbed() {
-    const memberAdd = this.channelList.find(
+    const memberAdd = this.textChannelList.find(
       (c) => c.value == this.channelData?.memberAdd
     );
-    const memberRemove = this.channelList.find(
+    const memberRemove = this.textChannelList.find(
       (c) => c.value == this.channelData?.memberRemove
     );
-    const notifyStream = this.channelList.find(
+    const notifyStream = this.textChannelList.find(
       (c) => c.value == this.channelData?.liveMessage
     );
+    const voicePortal = this.voiceChannelList.find(
+      (c) => c.value == this.channelData?.voicePortal
+    );
+    const updateMember = this.voiceChannelList.find(
+      (c) => c.value == this.channelData?.updateMember
+    );
+
     const notifyEmbed = new EmbedBuilder()
       .setColor(0x0099ff)
       .setTitle("通知設定")
@@ -118,6 +138,16 @@ class Setting {
         {
           name: "開台通知",
           value: notifyStream?.label || "\u200B",
+          inline: true,
+        },
+        {
+          name: "語音傳送門",
+          value: voicePortal?.label || "\u200B",
+          inline: true,
+        },
+        {
+          name: "更新人數",
+          value: updateMember?.label || "\u200B",
           inline: true,
         }
       );

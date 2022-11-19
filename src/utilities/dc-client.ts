@@ -193,18 +193,18 @@ class DcClient extends Client {
       // New voice channel name
       const portalName = `${username}#${discriminator}`;
       // Create portal voice channel
-      const voicePoral = await newState.guild.channels
+      const voicePortal = await newState.guild.channels
         ?.create({
           parent: newState?.channel?.parent,
           type: ChannelType.GuildVoice,
           name: portalName,
         })
         .catch(() => {});
-      if (!voicePoral) {
+      if (!voicePortal) {
         return;
       }
       // Move member to temporary channel
-      await newState.member.voice?.setChannel(voicePoral).catch(() => {});
+      await newState.member.voice?.setChannel(voicePortal).catch(() => {});
       // Record it
       this.portals.set(newState.member.user.id, true);
     }
@@ -287,6 +287,20 @@ class DcClient extends Client {
         channelData.liveMessage = value;
         break;
       }
+      case "portal_voice": {
+        channelData.voicePortal = value;
+        break;
+      }
+      case "update_memeber": {
+        channelData.updateMember = value;
+        break;
+      }
+      default: {
+        console.log(
+          `[WARNING]: Unknow select menu id '${interaction.customId}'`
+        );
+        break;
+      }
     }
     this.channelDatas.set(interaction.guildId, channelData);
 
@@ -327,6 +341,17 @@ class DcClient extends Client {
           interaction.client.channels.cache.get(channelData.liveMessage)
         );
         await streamNotifyChannel?.send(`Member remove test`).catch(() => {});
+        break;
+      }
+      case "update_member_button": {
+        const updateMemberChannel = <VoiceChannel>(
+          interaction.client.channels.cache.get(channelData.updateMember)
+        );
+        await updateMemberChannel?.send(`Update Member test`).catch(() => {});
+        break;
+      }
+      default: {
+        console.log(`[WARNING]: Unknow button id '${interaction.customId}'`);
         break;
       }
     }
