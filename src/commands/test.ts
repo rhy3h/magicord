@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, PermissionFlagsBits } from "discord.js";
 import { SlashCommand } from "../components/SlashCommand";
 import { Test } from "../components/Test";
 import { IChannel } from "../utilities/dc-client";
@@ -9,7 +9,8 @@ class TestCommand extends SlashCommand {
     this.setName("test")
       .setNameLocalizations({ "zh-TW": "測試" })
       .setDescription("Just a test")
-      .setDescriptionLocalizations({ "zh-TW": "就是測試" });
+      .setDescriptionLocalizations({ "zh-TW": "就是測試" })
+      .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
   }
 
   public async execute(
