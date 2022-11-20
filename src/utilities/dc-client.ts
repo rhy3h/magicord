@@ -6,6 +6,7 @@ import {
   ClientOptions,
   Collection,
   GuildMember,
+  ModalSubmitInteraction,
   PartialGuildMember,
   SlashCommandBuilder,
   TextChannel,
@@ -32,8 +33,8 @@ interface IChannel {
     name: string;
   };
   role: {
-    roleID: string;
-    messageID: string;
+    roleID: Array<string>;
+    message: string;
   };
 }
 
@@ -96,8 +97,8 @@ class DcClient extends Client {
           name: "",
         },
         role: {
-          roleID: "",
-          messageID: "",
+          roleID: [],
+          message: "",
         },
       };
       this.channelDatas.set(id, channelData);
@@ -277,17 +278,13 @@ class DcClient extends Client {
     );
     switch (interaction.commandName) {
       case "setting": {
-        await interaction.deferReply();
-
-        slashCommand?.execute(interaction, channelData);
+        await slashCommand?.execute(interaction, channelData);
 
         this.channelDatas.set(interaction.guildId, channelData);
         const channelJson = JSON.stringify(
           Object.fromEntries(this.channelDatas)
         );
         fs.writeFile("./src/channel.json", channelJson);
-
-        await interaction.deleteReply();
         break;
       }
       case "test": {
@@ -335,10 +332,48 @@ class DcClient extends Client {
         break;
       }
       default: {
-        console.log(`[WARNING]: Unknow button id '${interaction.customId}'`);
+        if (interaction.customId.split("_")[0] == "role") {
+          const roleID = interaction.customId.split("_")[1];
+          const channelData = <IChannel>(
+            this.channelDatas.get(interaction.guildId)
+          );
+          if (channelData.role.roleID.indexOf(roleID) > -1) {
+            const roleID = this.channelDatas.get(interaction.guildId)?.role
+              .roleID;
+            if (!roleID) {
+              break;
+            }
+            const member = await interaction.guild?.members.fetch(
+              interaction.user.id
+            );
+            await member?.roles.add(roleID).catch((err) => {
+              console.log(`[ERROR]: ${err.message}`);
+            });
+          }
+        } else {
+          console.log(`[WARNING]: Unknow button id '${interaction.customId}'`);
+        }
         break;
       }
     }
+
+    await interaction.deleteReply();
+  }
+  public async executeModal(interaction: ModalSubmitInteraction) {
+    await interaction.deferReply();
+
+    if (!interaction.guildId) {
+      return;
+    }
+
+    const channelData = <IChannel>this.channelDatas.get(interaction.guildId);
+
+    const messageInput = interaction.fields.getTextInputValue("messageInput");
+    channelData.role.message = messageInput;
+
+    this.channelDatas.set(interaction.guildId, channelData);
+    const channelJson = JSON.stringify(Object.fromEntries(this.channelDatas));
+    fs.writeFile("./src/channel.json", channelJson);
 
     await interaction.deleteReply();
   }

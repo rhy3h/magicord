@@ -1,4 +1,9 @@
-import { Events, GatewayIntentBits, PermissionsBitField } from "discord.js";
+import {
+  Events,
+  GatewayIntentBits,
+  Partials,
+  PermissionsBitField,
+} from "discord.js";
 import { token } from "./config.json";
 import { DcClient } from "./utilities/dc-client";
 
@@ -8,7 +13,9 @@ const client = new DcClient({
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
   ],
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
 // Discord bot on ready
@@ -55,6 +62,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
   // Button
   if (interaction.isButton()) {
     await client.executeButton(interaction);
+  }
+  // Modal
+  if (interaction.isModalSubmit()) {
+    await client.executeModal(interaction);
   }
 });
 

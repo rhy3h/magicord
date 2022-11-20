@@ -4,6 +4,8 @@ import {
   PermissionFlagsBits,
 } from "discord.js";
 import { SlashCommand } from "../components/SlashCommand";
+import { RoleMessageModal } from "../components/RoleMessageModal";
+import { RoleMessage } from "../components/RoleMessage";
 import { IChannel } from "../utilities/dc-client";
 
 class SettingCommand extends SlashCommand {
@@ -114,76 +116,141 @@ class SettingCommand extends SlashCommand {
               .setRequired(true)
           )
       )
-      .addSubcommand((subcommand) =>
-        subcommand
+      .addSubcommandGroup((group) =>
+        group
           .setName("role")
           .setNameLocalizations({ "zh-TW": "身分組" })
-          .setDescription("Just Role")
+          .setDescription("Just role")
           .setDescriptionLocalizations({ "zh-TW": "就是身分組" })
-          .addStringOption((option) =>
-            option
+          .addSubcommand((subcommand) =>
+            subcommand
               .setName("message")
-              .setNameLocalizations({ "zh-TW": "回應訊息" })
-              .setDescription("Message ID")
-              .setDescriptionLocalizations({ "zh-TW": "回應訊息的 ID" })
+              .setNameLocalizations({ "zh-TW": "訊息" })
+              .setDescription("Just role message")
+              .setDescriptionLocalizations({ "zh-TW": "就是訊息" })
           )
-          .addRoleOption((option) =>
-            option
-              .setName("role")
-              .setNameLocalizations({ "zh-TW": "身分組" })
-              .setDescription("Just role")
-              .setDescriptionLocalizations({ "zh-TW": "就是身分組" })
+          .addSubcommand((subcommand) =>
+            subcommand
+              .setName("send")
+              .setNameLocalizations({ "zh-TW": "傳送" })
+              .setDescription("Just send message")
+              .setDescriptionLocalizations({ "zh-TW": "就是傳送訊息" })
           )
-          .addStringOption((option) =>
-            option
-              .setName("reaction")
-              .setNameLocalizations({ "zh-TW": "貼圖" })
-              .setDescription("Just reeaction")
-              .setDescriptionLocalizations({ "zh-TW": "就是回應的貼圖" })
+          .addSubcommand((subcommand) =>
+            subcommand
+              .setName("add")
+              .setNameLocalizations({ "zh-TW": "新增" })
+              .setDescription("Just add")
+              .setDescriptionLocalizations({ "zh-TW": "就是新增" })
+              .addRoleOption((option) =>
+                option
+                  .setName("role")
+                  .setNameLocalizations({ "zh-TW": "身分組" })
+                  .setDescription("Just role")
+                  .setDescriptionLocalizations({ "zh-TW": "就是身分組" })
+                  .setRequired(true)
+              )
+          )
+          .addSubcommand((subcommand) =>
+            subcommand
+              .setName("remove")
+              .setNameLocalizations({ "zh-TW": "移除" })
+              .setDescription("Just remove")
+              .setDescriptionLocalizations({ "zh-TW": "就是移除" })
+              .addRoleOption((option) =>
+                option
+                  .setName("role")
+                  .setNameLocalizations({ "zh-TW": "身分組" })
+                  .setDescription("Just role")
+                  .setDescriptionLocalizations({ "zh-TW": "就是身分組" })
+                  .setRequired(true)
+              )
           )
       );
   }
 
-  public execute(
+  public async execute(
     interaction: ChatInputCommandInteraction,
     channelData: IChannel
   ) {
     if (interaction.commandName == "setting") {
-      if (interaction.options.getSubcommandGroup() == "member") {
+      if (interaction.options.getSubcommandGroup() == "role") {
         switch (interaction.options.getSubcommand()) {
+          case "message": {
+            const modal = new RoleMessageModal();
+            await interaction.showModal(modal);
+            break;
+          }
+          case "send": {
+            const roleMessage = new RoleMessage(interaction, channelData);
+            await interaction.reply({
+              content: roleMessage.content,
+              components: roleMessage.row,
+            });
+            break;
+          }
           case "add": {
-            channelData.memberAdd =
-              interaction.options.getChannel("channel")?.id || "";
+            await interaction.deferReply();
+
+            const role = interaction.options.getRole("role")?.id || "";
+            if (!role) {
+              return;
+            }
+
+            if (channelData.role.roleID.indexOf(role) == -1) {
+              channelData.role.roleID.push(role);
+            }
+
+            await interaction.deleteReply();
             break;
           }
           case "remove": {
-            channelData.memberRemove =
-              interaction.options.getChannel("channel")?.id || "";
+            await interaction.deferReply();
+
+            const role = interaction.options.getRole("role")?.id || "";
+            if (!role) {
+              return;
+            }
+
+            const index = channelData.role.roleID.indexOf(role);
+            if (index > -1) {
+              channelData.role.roleID.splice(index, 1);
+            }
+
+            await interaction.deleteReply();
             break;
           }
-          case "count": {
-            channelData.memberCount =
-              interaction.options.getChannel("channel")?.id || "";
-            break;
+        }
+      } else {
+        await interaction.deferReply();
+        if (interaction.options.getSubcommandGroup() == "member") {
+          switch (interaction.options.getSubcommand()) {
+            case "add": {
+              channelData.memberAdd =
+                interaction.options.getChannel("channel")?.id || "";
+              break;
+            }
+            case "remove": {
+              channelData.memberRemove =
+                interaction.options.getChannel("channel")?.id || "";
+              break;
+            }
+            case "count": {
+              channelData.memberCount =
+                interaction.options.getChannel("channel")?.id || "";
+              break;
+            }
           }
+        } else if (interaction.options.getSubcommandGroup() == "stream") {
+          channelData.stream.channelID =
+            interaction.options.getChannel("channel")?.id || "";
+          channelData.stream.name =
+            interaction.options.getString("streamname") || "";
+        } else if (interaction.options.getSubcommand() == "portal") {
+          channelData.voicePortal =
+            interaction.options.getChannel("channel")?.id || "";
         }
-      } else if (interaction.options.getSubcommandGroup() == "stream") {
-        channelData.stream.channelID =
-          interaction.options.getChannel("channel")?.id || "";
-        channelData.stream.name =
-          interaction.options.getString("streamname") || "";
-      } else if (interaction.options.getSubcommand() == "portal") {
-        channelData.voicePortal =
-          interaction.options.getChannel("channel")?.id || "";
-      } else if (interaction.options.getSubcommand() == "role") {
-        if (interaction.options.getString("message")) {
-          channelData.role.messageID =
-            interaction.options.getString("message") || "";
-        }
-        if (interaction.options.getRole("role")) {
-          channelData.role.roleID =
-            interaction.options.getRole("role")?.id || "";
-        }
+        await interaction.deleteReply();
       }
     }
     return channelData;
