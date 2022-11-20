@@ -338,9 +338,7 @@ class DcClient extends Client {
             this.channelDatas.get(interaction.guildId)
           );
           if (channelData.role.roleID.indexOf(roleID) > -1) {
-            const roleID = this.channelDatas.get(interaction.guildId)?.role
-              .roleID;
-            if (!roleID) {
+            if (!this.channelDatas.get(interaction.guildId)?.role) {
               break;
             }
             const member = await interaction.guild?.members.fetch(
