@@ -120,13 +120,12 @@ class SettingCommand extends SlashCommand {
           .setNameLocalizations({ "zh-TW": "身分組" })
           .setDescription("Just Role")
           .setDescriptionLocalizations({ "zh-TW": "就是身分組" })
-          .addIntegerOption((option) =>
+          .addStringOption((option) =>
             option
               .setName("message")
               .setNameLocalizations({ "zh-TW": "回應訊息" })
               .setDescription("Message ID")
               .setDescriptionLocalizations({ "zh-TW": "回應訊息的 ID" })
-              .setRequired(true)
           )
           .addRoleOption((option) =>
             option
@@ -134,7 +133,13 @@ class SettingCommand extends SlashCommand {
               .setNameLocalizations({ "zh-TW": "身分組" })
               .setDescription("Just role")
               .setDescriptionLocalizations({ "zh-TW": "就是身分組" })
-              .setRequired(true)
+          )
+          .addStringOption((option) =>
+            option
+              .setName("reaction")
+              .setNameLocalizations({ "zh-TW": "貼圖" })
+              .setDescription("Just reeaction")
+              .setDescriptionLocalizations({ "zh-TW": "就是回應的貼圖" })
           )
       );
   }
@@ -171,9 +176,14 @@ class SettingCommand extends SlashCommand {
         channelData.voicePortal =
           interaction.options.getChannel("channel")?.id || "";
       } else if (interaction.options.getSubcommand() == "role") {
-        channelData.role.roleID = interaction.options.getRole("role")?.id || "";
-        channelData.role.messageID =
-          interaction.options.getInteger("message")?.toString() || "";
+        if (interaction.options.getString("message")) {
+          channelData.role.messageID =
+            interaction.options.getString("message") || "";
+        }
+        if (interaction.options.getRole("role")) {
+          channelData.role.roleID =
+            interaction.options.getRole("role")?.id || "";
+        }
       }
     }
     return channelData;
