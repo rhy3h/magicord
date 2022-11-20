@@ -2,6 +2,7 @@ import {
   ChannelType,
   ChatInputCommandInteraction,
   PermissionFlagsBits,
+  PermissionsBitField,
 } from "discord.js";
 import { SlashCommand } from "../components/SlashCommand";
 import { RoleMessageModal } from "../components/RoleMessageModal";
@@ -190,12 +191,19 @@ class SettingCommand extends SlashCommand {
             break;
           }
           case "add": {
-            await interaction.deferReply();
-
             const role = interaction.options.getRole("role")?.id || "";
             if (!role) {
               return;
             }
+
+            if (
+              interaction.guild?.roles.cache
+                .get(role)
+                ?.permissions.has(PermissionsBitField.Flags.Administrator)
+            ) {
+              return;
+            }
+            await interaction.deferReply();
 
             if (channelData.role.roleID.indexOf(role) == -1) {
               channelData.role.roleID.push(role);
