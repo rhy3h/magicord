@@ -199,7 +199,16 @@ class SettingCommand extends SlashCommand {
             if (
               interaction.guild?.roles.cache
                 .get(role)
-                ?.permissions.has(PermissionsBitField.Flags.Administrator)
+                ?.permissions.has([
+                  PermissionsBitField.Flags.Administrator,
+                  PermissionsBitField.Flags.BanMembers,
+                  PermissionsBitField.Flags.KickMembers,
+                  PermissionsBitField.Flags.MoveMembers,
+                  PermissionsBitField.Flags.MuteMembers,
+                  PermissionsBitField.Flags.DeafenMembers,
+                  PermissionsBitField.Flags.ModerateMembers,
+                  PermissionsBitField.Flags.ManageMessages,
+                ])
             ) {
               return;
             }
