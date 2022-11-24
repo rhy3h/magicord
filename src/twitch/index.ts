@@ -6,19 +6,22 @@ class TwitchStatus {
   public user_name: string;
   public started_at: string;
   public thumbnail_url: string;
+  public game_name: string;
 
   constructor(
     title: string,
     user_login: string,
     user_name: string,
     started_at: string,
-    thumbnail_url: string
+    thumbnail_url: string,
+    game_name: string
   ) {
     this.title = title;
     this.user_login = user_login;
     this.user_name = user_name;
     this.started_at = started_at;
     this.thumbnail_url = thumbnail_url;
+    this.game_name = game_name;
   }
 }
 
@@ -78,15 +81,23 @@ class TwitchLive {
         resolve(null);
         return;
       }
-      const { title, user_login, user_name, started_at, thumbnail_url } =
-        stream[0];
+      const {
+        title,
+        user_login,
+        user_name,
+        started_at,
+        thumbnail_url,
+        game_name,
+      } = stream[0];
+
       resolve(
         new TwitchStatus(
           title,
           user_login,
           user_name,
           started_at,
-          thumbnail_url
+          thumbnail_url,
+          game_name
         )
       );
     });

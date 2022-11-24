@@ -18,6 +18,7 @@ import path from "path";
 
 import { SlashCommand } from "../components/SlashCommand";
 import { TwitchLive, TwitchStatus } from "../twitch/index";
+import { TwitchNotifyEmbed } from "../components/TwitchNotifyEmbed";
 
 import { client_id, client_secret } from "../twitch/config.json";
 import * as channels from "../channel.json";
@@ -245,11 +246,12 @@ class DcClient extends Client {
           const streamNotifyChannel = <TextChannel>(
             server?.channels.cache.get(channelID)
           );
-          // TODO: Embed text, and custom content
+          const twitchNotifyMessage = new TwitchNotifyEmbed(streamStatus);
           streamNotifyChannel
-            ?.send(
-              `https://www.twitch.tv/${streamStatus.user_login} ${streamStatus.user_name} 開台了!`
-            )
+            ?.send({
+              embeds: [twitchNotifyMessage.embed],
+              components: [twitchNotifyMessage.row],
+            })
             .catch(() => {});
           resolve(true);
         })
@@ -321,7 +323,7 @@ class DcClient extends Client {
         const streamNotifyChannel = <TextChannel>(
           interaction.client.channels.cache.get(channelData.stream.channelID)
         );
-        await streamNotifyChannel?.send(`Member remove test`).catch(() => {});
+        await streamNotifyChannel?.send(`Stream notify test`).catch(() => {});
         break;
       }
       case "update_member_button": {
