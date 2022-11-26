@@ -137,7 +137,7 @@ class DcClient extends Client {
       if (key == "default") {
         return;
       }
-      this.hisotryDatas.set(key, data);
+      this.hisotryDatas.set(key, <string[]>data);
     });
   }
 
