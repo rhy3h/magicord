@@ -163,13 +163,12 @@ class DcClient extends Client {
 
     this.channelDatas.forEach((channelData, guildId) => {
       const guild = this.guilds.cache.get(guildId);
-      const voicePortal = guild?.channels.cache.get(channelData.voicePortal);
 
       const portalChannels = guild?.channels.cache.filter((c) => {
         return (
           c.type == ChannelType.GuildVoice &&
-          c.parentId == voicePortal?.parentId &&
-          c.id != channelData.voicePortal
+          c.name != channelData.voicePortal &&
+          c.name.split("-")[0] == channelData.voicePortal
         );
       });
       portalChannels?.forEach(async (portalChannel) => {
@@ -194,8 +193,8 @@ class DcClient extends Client {
     }
 
     const guildId = newState?.channel?.guildId;
-    const id = newState?.channel?.id;
-    if (this.channelDatas.get(guildId)?.voicePortal == id) {
+    const name = newState?.channel?.name;
+    if (this.channelDatas.get(guildId)?.voicePortal == name) {
       // No member
       if (!newState.member) {
         return;
@@ -203,7 +202,7 @@ class DcClient extends Client {
       // Name, ID
       const { username, discriminator } = newState?.member?.user;
       // New voice channel name
-      const portalName = `${username}#${discriminator}`;
+      const portalName = `${name}-${username}#${discriminator}`;
       // Create portal voice channel
       const voicePortal = await newState.guild.channels
         ?.create({

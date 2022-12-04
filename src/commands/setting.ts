@@ -103,17 +103,16 @@ class SettingCommand extends SlashCommand {
       )
       .addSubcommand((subcommand) =>
         subcommand
-          .setName("portal")
-          .setNameLocalizations({ "zh-TW": "語音傳送門" })
+          .setName("portalname")
+          .setNameLocalizations({ "zh-TW": "語音傳送門名稱" })
           .setDescription("Just portal")
           .setDescriptionLocalizations({ "zh-TW": "就是語音傳送門" })
-          .addChannelOption((option) =>
+          .addStringOption((option) =>
             option
-              .setName("channel")
-              .setNameLocalizations({ "zh-TW": "頻道" })
-              .setDescription("Voice Channel")
-              .setDescriptionLocalizations({ "zh-TW": "語音頻道" })
-              .addChannelTypes(ChannelType.GuildVoice)
+              .setName("set")
+              .setNameLocalizations({ "zh-TW": "設置" })
+              .setDescription("Voice portal name")
+              .setDescriptionLocalizations({ "zh-TW": "傳送門名稱" })
               .setRequired(true)
           )
       )
@@ -263,9 +262,8 @@ class SettingCommand extends SlashCommand {
             interaction.options.getChannel("channel")?.id || "";
           channelData.stream.name =
             interaction.options.getString("streamname") || "";
-        } else if (interaction.options.getSubcommand() == "portal") {
-          channelData.voicePortal =
-            interaction.options.getChannel("channel")?.id || "";
+        } else if (interaction.options.getSubcommand() == "portalname") {
+          channelData.voicePortal = interaction.options.getString("set") || "";
         }
         await interaction.deleteReply();
       }
