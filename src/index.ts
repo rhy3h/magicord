@@ -21,6 +21,7 @@ const client = new DcClient({
 // Discord bot on ready
 client.once(Events.ClientReady, async () => {
   client.initChannelData();
+  client.initHistoryData();
   client.updateMember();
   await client.clearPortal();
   setInterval(async () => {

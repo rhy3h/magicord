@@ -109,6 +109,19 @@ class DcClient extends Client {
     fs.writeFile("./src/channel.json", channelJson);
   }
 
+  public initHistoryData() {
+    this.guilds.cache.forEach((guild) => {
+      const { id } = guild;
+      if (this.hisotryDatas.get(id)) {
+        return;
+      }
+      this.hisotryDatas.set(id, []);
+    });
+
+    const channelJson = JSON.stringify(Object.fromEntries(this.channelDatas));
+    fs.writeFile("./src/channel.json", channelJson);
+  }
+
   public updateMember() {
     this.guilds.cache.forEach((guild) => {
       const { id } = guild;
