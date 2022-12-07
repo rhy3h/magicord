@@ -258,12 +258,20 @@ class SettingCommand extends SlashCommand {
             }
           }
         } else if (interaction.options.getSubcommandGroup() == "stream") {
-          channelData.stream.channelID =
-            interaction.options.getChannel("channel")?.id || "";
-          channelData.stream.name =
-            interaction.options.getString("streamname") || "";
+          const channelID = interaction.options.getChannel("channel")?.id;
+          if (channelID) {
+            channelData.stream.channelID = channelID;
+          }
+
+          const streamname = interaction.options.getString("streamname");
+          if (streamname) {
+            channelData.stream.name = streamname;
+          }
         } else if (interaction.options.getSubcommand() == "portalname") {
-          channelData.voicePortal = interaction.options.getString("set") || "";
+          const voicePortal = interaction.options.getString("set");
+          if (voicePortal) {
+            channelData.voicePortal = voicePortal;
+          }
         }
         await interaction.deleteReply();
       }
