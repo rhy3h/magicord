@@ -28,10 +28,14 @@ class RoleMessage {
     const buttonRow = new ActionRowBuilder<ButtonBuilder>();
 
     this.channelData.role.roleID.forEach((roleID) => {
+      const name = role?.cache.get(roleID)?.name;
+      if (!name) {
+        return;
+      }
       buttonRow.addComponents(
         new ButtonBuilder()
           .setCustomId(`role_${roleID}`)
-          .setLabel(role?.cache.get(roleID)?.name || "")
+          .setLabel(name)
           .setStyle(ButtonStyle.Primary)
       );
     });
