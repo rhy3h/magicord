@@ -142,7 +142,7 @@ class SettingCommand extends SlashCommand {
               .setNameLocalizations({ "zh-TW": "新增" })
               .setDescription("Just add")
               .setDescriptionLocalizations({ "zh-TW": "就是新增" })
-              .addRoleOption((option) =>
+              .addStringOption((option) =>
                 option
                   .setName("role")
                   .setNameLocalizations({ "zh-TW": "身分組" })
@@ -157,7 +157,7 @@ class SettingCommand extends SlashCommand {
               .setNameLocalizations({ "zh-TW": "移除" })
               .setDescription("Just remove")
               .setDescriptionLocalizations({ "zh-TW": "就是移除" })
-              .addRoleOption((option) =>
+              .addStringOption((option) =>
                 option
                   .setName("role")
                   .setNameLocalizations({ "zh-TW": "身分組" })
@@ -190,34 +190,48 @@ class SettingCommand extends SlashCommand {
             break;
           }
           case "add": {
-            const role = interaction.options.getRole("role")?.id || "";
+            await interaction.deferReply({ ephemeral: true });
+
+            const roleName = interaction.options.getString("role");
+            if (!roleName) {
+              await interaction.editReply({ content: `No role name` });
+              return;
+            }
+
+            const role = interaction.guild?.roles.cache.find(
+              (r) => r.name == roleName
+            );
             if (!role) {
+              await interaction.editReply({
+                content: `Cannot find role '${roleName}'`,
+              });
               return;
             }
-
             if (
-              interaction.guild?.roles.cache
-                .get(role)
-                ?.permissions.has([
-                  PermissionsBitField.Flags.Administrator,
-                  PermissionsBitField.Flags.BanMembers,
-                  PermissionsBitField.Flags.KickMembers,
-                  PermissionsBitField.Flags.MoveMembers,
-                  PermissionsBitField.Flags.MuteMembers,
-                  PermissionsBitField.Flags.DeafenMembers,
-                  PermissionsBitField.Flags.ModerateMembers,
-                  PermissionsBitField.Flags.ManageMessages,
-                ])
+              role.permissions.has([
+                PermissionsBitField.Flags.Administrator,
+                PermissionsBitField.Flags.BanMembers,
+                PermissionsBitField.Flags.KickMembers,
+                PermissionsBitField.Flags.MoveMembers,
+                PermissionsBitField.Flags.MuteMembers,
+                PermissionsBitField.Flags.DeafenMembers,
+                PermissionsBitField.Flags.ModerateMembers,
+                PermissionsBitField.Flags.ManageMessages,
+              ])
             ) {
+              await interaction.editReply({
+                content: `'${role}' permission not authorized`,
+              });
               return;
             }
-            await interaction.deferReply();
 
-            if (channelData.role.roleID.indexOf(role) == -1) {
-              channelData.role.roleID.push(role);
+            if (channelData.role.roleID.indexOf(role.id) == -1) {
+              channelData.role.roleID.push(role.id);
             }
 
-            await interaction.deleteReply();
+            await interaction.editReply({
+              content: `Success`,
+            });
             break;
           }
           case "remove": {

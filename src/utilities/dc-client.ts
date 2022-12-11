@@ -313,7 +313,7 @@ class DcClient extends Client {
       return;
     }
 
-    await interaction.deferReply();
+    await interaction.deferReply({ ephemeral: true });
 
     const channelData = <IChannel>this.channelDatas.get(interaction.guildId);
     switch (interaction.customId) {
@@ -358,18 +358,22 @@ class DcClient extends Client {
             const member = await interaction.guild?.members.fetch(
               interaction.user.id
             );
-            await member?.roles.add(roleID).catch((err) => {
-              console.log(`[ERROR]: ${err.message}`);
-            });
+            await member?.roles
+              .add(roleID)
+              .then(async () => {
+                await interaction.editReply({ content: `Success` });
+              })
+              .catch(async (err) => {
+                await interaction.editReply({ content: `${err.message}` });
+              });
           }
         } else {
           console.log(`[WARNING]: Unknow button id '${interaction.customId}'`);
+          await interaction.deleteReply();
         }
         break;
       }
     }
-
-    await interaction.deleteReply();
   }
   public async executeModal(interaction: ModalSubmitInteraction) {
     await interaction.deferReply();
