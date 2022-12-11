@@ -237,12 +237,24 @@ class SettingCommand extends SlashCommand {
           case "remove": {
             await interaction.deferReply();
 
-            const role = interaction.options.getRole("role")?.id || "";
-            if (!role) {
+            const roleName = interaction.options.getString("role");
+            if (!roleName) {
+              await interaction.editReply({ content: `No role name` });
               return;
             }
 
-            const index = channelData.role.roleID.indexOf(role);
+            const role = interaction.guild?.roles.cache.find(
+              (r) => r.name == roleName
+            );
+
+            if (!role) {
+              await interaction.editReply({
+                content: `Cannot find role '${roleName}'`,
+              });
+              return;
+            }
+
+            const index = channelData.role.roleID.indexOf(role.id);
             if (index > -1) {
               channelData.role.roleID.splice(index, 1);
             }
