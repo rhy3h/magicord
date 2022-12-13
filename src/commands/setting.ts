@@ -142,7 +142,7 @@ class SettingCommand extends SlashCommand {
               .setNameLocalizations({ "zh-TW": "新增" })
               .setDescription("Just add")
               .setDescriptionLocalizations({ "zh-TW": "就是新增" })
-              .addStringOption((option) =>
+              .addRoleOption((option) =>
                 option
                   .setName("role")
                   .setNameLocalizations({ "zh-TW": "身分組" })
@@ -157,7 +157,7 @@ class SettingCommand extends SlashCommand {
               .setNameLocalizations({ "zh-TW": "移除" })
               .setDescription("Just remove")
               .setDescriptionLocalizations({ "zh-TW": "就是移除" })
-              .addStringOption((option) =>
+              .addRoleOption((option) =>
                 option
                   .setName("role")
                   .setNameLocalizations({ "zh-TW": "身分組" })
@@ -192,18 +192,18 @@ class SettingCommand extends SlashCommand {
           case "add": {
             await interaction.deferReply({ ephemeral: true });
 
-            const roleName = interaction.options.getString("role");
-            if (!roleName) {
+            const roleID = interaction.options.getRole("role")?.id;
+            if (!roleID) {
               await interaction.editReply({ content: `No role name` });
               return;
             }
 
             const role = interaction.guild?.roles.cache.find(
-              (r) => r.name == roleName
+              (r) => r.id == roleID
             );
             if (!role) {
               await interaction.editReply({
-                content: `Cannot find role '${roleName}'`,
+                content: `Cannot find role '${roleID}'`,
               });
               return;
             }
@@ -237,24 +237,16 @@ class SettingCommand extends SlashCommand {
           case "remove": {
             await interaction.deferReply();
 
-            const roleName = interaction.options.getString("role");
-            if (!roleName) {
-              await interaction.editReply({ content: `No role name` });
-              return;
-            }
-
-            const role = interaction.guild?.roles.cache.find(
-              (r) => r.name == roleName
-            );
+            const role = interaction.options.getRole("role")?.id || "";
 
             if (!role) {
               await interaction.editReply({
-                content: `Cannot find role '${roleName}'`,
+                content: `Cannot find role '${role}'`,
               });
               return;
             }
 
-            const index = channelData.role.roleID.indexOf(role.id);
+            const index = channelData.role.roleID.indexOf(role);
             if (index > -1) {
               channelData.role.roleID.splice(index, 1);
             }
