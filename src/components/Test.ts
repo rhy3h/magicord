@@ -25,13 +25,16 @@ class Test {
   public embed: Array<EmbedBuilder>;
   private textChannelList: Array<ChannelInfo>;
   private voiceChannelList: Array<ChannelInfo>;
+  private roleList: Array<ChannelInfo>;
 
   constructor(interaction: Interaction, channelData: IChannel) {
     this.channelData = channelData;
 
     this.textChannelList = [];
     this.voiceChannelList = [];
+    this.roleList = [];
     this.initChannelList(interaction);
+    this.initRoleList(interaction);
 
     this.row = this.createRow();
     this.embed = this.createEmbed();
@@ -49,6 +52,14 @@ class Test {
       } else if (channel.type == ChannelType.GuildVoice) {
         this.voiceChannelList.push(new ChannelInfo(channel.id, channel.name));
       }
+    });
+  }
+
+  private initRoleList(interaction: Interaction) {
+    const roles = interaction.guild?.roles.cache;
+
+    roles?.forEach((role) => {
+      this.roleList.push(new ChannelInfo(role.id, role.name));
     });
   }
 
@@ -91,6 +102,14 @@ class Test {
     const updateMember = this.voiceChannelList.find(
       (c) => c.value == this.channelData?.memberCount
     );
+    const roleList: Array<String> = [];
+    this.channelData?.role?.roleID.forEach((roleID) => {
+      const role = this.roleList.find((c) => c.value == roleID);
+      if (!role) {
+        return;
+      }
+      roleList.push(role.label);
+    });
 
     const notifyEmbed = new EmbedBuilder()
       .setColor(0x0099ff)
@@ -116,6 +135,10 @@ class Test {
         {
           name: "更新人數",
           value: updateMember?.label || "\u200B",
+        },
+        {
+          name: "身分組",
+          value: roleList.length == 0 ? "\u200B" : roleList.join("\n"),
         }
       );
     return [notifyEmbed];
