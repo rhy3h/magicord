@@ -173,187 +173,194 @@ class SettingCommand extends SlashCommand {
     interaction: ChatInputCommandInteraction,
     channelData: IChannel
   ) {
-    if (interaction.commandName == "setting") {
-      if (interaction.options.getSubcommandGroup() == "role") {
-        switch (interaction.options.getSubcommand()) {
-          case "message": {
-            const modal = new RoleMessageModal();
-            await interaction.showModal(modal);
-            break;
-          }
-          case "send": {
-            const roleMessage = new RoleMessage(interaction, channelData);
-            await interaction.reply({
-              content: roleMessage.content,
-              components: roleMessage.row,
-            });
-            break;
-          }
-          case "add": {
-            await interaction.deferReply({ ephemeral: true });
+    if (interaction.commandName != "setting") {
+      await interaction.deferReply({ ephemeral: true });
+      await interaction.editReply({
+        content: `Wrong commands '${interaction.commandName}'`,
+      });
+      return;
+    }
 
-            const _role = interaction.options.getRole("role");
-            if (!_role) {
-              await interaction.editReply({
-                content: `Role '${_role}' is not existed`,
-              });
-              return;
-            }
-
-            const role = interaction.guild?.roles.cache.find(
-              (r) => r.id == _role.id
-            );
-            if (!role) {
-              await interaction.editReply({
-                content: `Cannot find role '${_role}'`,
-              });
-              return;
-            }
-
-            if (
-              role.permissions.has([
-                PermissionsBitField.Flags.Administrator,
-                PermissionsBitField.Flags.BanMembers,
-                PermissionsBitField.Flags.KickMembers,
-                PermissionsBitField.Flags.MoveMembers,
-                PermissionsBitField.Flags.MuteMembers,
-                PermissionsBitField.Flags.DeafenMembers,
-                PermissionsBitField.Flags.ModerateMembers,
-                PermissionsBitField.Flags.ManageMessages,
-              ])
-            ) {
-              await interaction.editReply({
-                content: `'${role.name}''s permission is not authorized`,
-              });
-              return;
-            }
-
-            if (channelData.role.roleID.indexOf(role.id) != -1) {
-              await interaction.editReply({
-                content: `Role '${role.name}' is already added`,
-              });
-              return;
-            }
-
-            channelData.role.roleID.push(role.id);
-            await interaction.editReply({
-              content: `Add role '${role.name}' success`,
-            });
-            break;
-          }
-          case "remove": {
-            await interaction.deferReply({ ephemeral: true });
-
-            const _role = interaction.options.getRole("role");
-
-            if (!_role) {
-              await interaction.editReply({
-                content: `Role '${_role}' is not existed`,
-              });
-              return;
-            }
-
-            const index = channelData.role.roleID.indexOf(_role.id);
-            if (index == -1) {
-              await interaction.editReply({
-                content: `Role '${_role.name}' is not added`,
-              });
-              return;
-            }
-
-            channelData.role.roleID.splice(index, 1);
-            await interaction.editReply({
-              content: `Remove role '${_role.name}' success`,
-            });
-            break;
-          }
+    if (interaction.options.getSubcommandGroup() == "role") {
+      switch (interaction.options.getSubcommand()) {
+        case "message": {
+          const modal = new RoleMessageModal();
+          await interaction.showModal(modal);
+          break;
         }
-      } else {
-        await interaction.deferReply({ ephemeral: true });
-        if (interaction.options.getSubcommandGroup() == "member") {
-          switch (interaction.options.getSubcommand()) {
-            case "add": {
-              const memberAdd = interaction.options.getChannel("channel");
-              if (!memberAdd) {
-                await interaction.editReply({
-                  content: `No member add channel id`,
-                });
-                return;
-              }
-
-              channelData.memberAdd = memberAdd.id;
-              await interaction.editReply({
-                content: `Set member add channel "${memberAdd.name}" success`,
-              });
-              break;
-            }
-            case "remove": {
-              const memberRemove = interaction.options.getChannel("channel");
-              if (!memberRemove) {
-                await interaction.editReply({
-                  content: `No member remove channel id`,
-                });
-                return;
-              }
-
-              channelData.memberRemove = memberRemove.id;
-              await interaction.editReply({
-                content: `Set member remove channel "${memberRemove.name}" success`,
-              });
-              break;
-            }
-            case "count": {
-              const memberCount = interaction.options.getChannel("channel");
-              if (!memberCount) {
-                await interaction.editReply({
-                  content: `No member count channel id`,
-                });
-                return;
-              }
-
-              channelData.memberCount = memberCount.id;
-              await interaction.editReply({
-                content: `Set member count channel "${memberCount.name}" success`,
-              });
-              break;
-            }
-          }
-        } else if (interaction.options.getSubcommandGroup() == "stream") {
-          let replyContent = ``;
-          const streamNotify = interaction.options.getChannel("channel");
-          if (streamNotify) {
-            channelData.stream.channelID = streamNotify.id;
-
-            replyContent += `Set stream notify channel "${streamNotify.name}" success\n`;
-          }
-
-          const streamname = interaction.options.getString("streamname");
-          if (streamname) {
-            channelData.stream.name = streamname;
-
-            replyContent += `Set streamer name "${streamname}" success`;
-          }
-
-          await interaction.editReply({
-            content: replyContent,
+        case "send": {
+          const roleMessage = new RoleMessage(interaction, channelData);
+          await interaction.reply({
+            content: roleMessage.content,
+            components: roleMessage.row,
           });
-        } else if (interaction.options.getSubcommand() == "portalname") {
-          const voicePortal = interaction.options.getString("set");
+          break;
+        }
+        case "add": {
+          await interaction.deferReply({ ephemeral: true });
 
-          if (!voicePortal) {
+          const _role = interaction.options.getRole("role");
+          if (!_role) {
             await interaction.editReply({
-              content: `No portal name`,
+              content: `Role '${_role}' is not existed`,
             });
             return;
           }
 
-          channelData.voicePortal = voicePortal;
+          const role = interaction.guild?.roles.cache.find(
+            (r) => r.id == _role.id
+          );
+          if (!role) {
+            await interaction.editReply({
+              content: `Cannot find role '${_role}'`,
+            });
+            return;
+          }
+
+          if (
+            role.permissions.has([
+              PermissionsBitField.Flags.Administrator,
+              PermissionsBitField.Flags.BanMembers,
+              PermissionsBitField.Flags.KickMembers,
+              PermissionsBitField.Flags.MoveMembers,
+              PermissionsBitField.Flags.MuteMembers,
+              PermissionsBitField.Flags.DeafenMembers,
+              PermissionsBitField.Flags.ModerateMembers,
+              PermissionsBitField.Flags.ManageMessages,
+            ])
+          ) {
+            await interaction.editReply({
+              content: `'${role.name}''s permission is not authorized`,
+            });
+            return;
+          }
+
+          if (channelData.role.roleID.indexOf(role.id) != -1) {
+            await interaction.editReply({
+              content: `Role '${role.name}' is already added`,
+            });
+            return;
+          }
+
+          channelData.role.roleID.push(role.id);
           await interaction.editReply({
-            content: `Set portal "${voicePortal}" success`,
+            content: `Add role '${role.name}' success`,
           });
+          break;
+        }
+        case "remove": {
+          await interaction.deferReply({ ephemeral: true });
+
+          const _role = interaction.options.getRole("role");
+
+          if (!_role) {
+            await interaction.editReply({
+              content: `Role '${_role}' is not existed`,
+            });
+            return;
+          }
+
+          const index = channelData.role.roleID.indexOf(_role.id);
+          if (index == -1) {
+            await interaction.editReply({
+              content: `Role '${_role.name}' is not added`,
+            });
+            return;
+          }
+
+          channelData.role.roleID.splice(index, 1);
+          await interaction.editReply({
+            content: `Remove role '${_role.name}' success`,
+          });
+          break;
         }
       }
+    } else {
+      await interaction.deferReply({ ephemeral: true });
+      if (interaction.options.getSubcommandGroup() == "member") {
+        switch (interaction.options.getSubcommand()) {
+          case "add": {
+            const memberAdd = interaction.options.getChannel("channel");
+            if (!memberAdd) {
+              await interaction.editReply({
+                content: `No member add channel id`,
+              });
+              return;
+            }
+
+            channelData.memberAdd = memberAdd.id;
+            await interaction.editReply({
+              content: `Set member add channel "${memberAdd.name}" success`,
+            });
+            break;
+          }
+          case "remove": {
+            const memberRemove = interaction.options.getChannel("channel");
+            if (!memberRemove) {
+              await interaction.editReply({
+                content: `No member remove channel id`,
+              });
+              return;
+            }
+
+            channelData.memberRemove = memberRemove.id;
+            await interaction.editReply({
+              content: `Set member remove channel "${memberRemove.name}" success`,
+            });
+            break;
+          }
+          case "count": {
+            const memberCount = interaction.options.getChannel("channel");
+            if (!memberCount) {
+              await interaction.editReply({
+                content: `No member count channel id`,
+              });
+              return;
+            }
+
+            channelData.memberCount = memberCount.id;
+            await interaction.editReply({
+              content: `Set member count channel "${memberCount.name}" success`,
+            });
+            break;
+          }
+        }
+      } else if (interaction.options.getSubcommandGroup() == "stream") {
+        let replyContent = ``;
+        const streamNotify = interaction.options.getChannel("channel");
+        if (streamNotify) {
+          channelData.stream.channelID = streamNotify.id;
+
+          replyContent += `Set stream notify channel "${streamNotify.name}" success\n`;
+        }
+
+        const streamname = interaction.options.getString("streamname");
+        if (streamname) {
+          channelData.stream.name = streamname;
+
+          replyContent += `Set streamer name "${streamname}" success`;
+        }
+
+        await interaction.editReply({
+          content: replyContent,
+        });
+      } else if (interaction.options.getSubcommand() == "portalname") {
+        const voicePortal = interaction.options.getString("set");
+
+        if (!voicePortal) {
+          await interaction.editReply({
+            content: `No portal name`,
+          });
+          return;
+        }
+
+        channelData.voicePortal = voicePortal;
+        await interaction.editReply({
+          content: `Set portal "${voicePortal}" success`,
+        });
+      }
     }
+
     return channelData;
   }
 }
