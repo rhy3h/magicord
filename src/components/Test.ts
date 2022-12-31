@@ -86,7 +86,7 @@ class Test {
       (c) => c.value == this.channelData?.stream.channelID
     );
     const voicePortal = this.voiceChannelList.find(
-      (c) => c.value == this.channelData?.voicePortal
+      (c) => c.label == this.channelData?.voicePortal
     );
     const updateMember = this.voiceChannelList.find(
       (c) => c.value == this.channelData?.memberCount
