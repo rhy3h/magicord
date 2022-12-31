@@ -192,21 +192,24 @@ class SettingCommand extends SlashCommand {
           case "add": {
             await interaction.deferReply({ ephemeral: true });
 
-            const roleID = interaction.options.getRole("role")?.id;
-            if (!roleID) {
-              await interaction.editReply({ content: `No role name` });
+            const _role = interaction.options.getRole("role");
+            if (!_role) {
+              await interaction.editReply({
+                content: `Role '${_role}' is not existed`,
+              });
               return;
             }
 
             const role = interaction.guild?.roles.cache.find(
-              (r) => r.id == roleID
+              (r) => r.id == _role.id
             );
             if (!role) {
               await interaction.editReply({
-                content: `Cannot find role '${roleID}'`,
+                content: `Cannot find role '${_role}'`,
               });
               return;
             }
+
             if (
               role.permissions.has([
                 PermissionsBitField.Flags.Administrator,
@@ -220,17 +223,21 @@ class SettingCommand extends SlashCommand {
               ])
             ) {
               await interaction.editReply({
-                content: `'${role}' permission not authorized`,
+                content: `'${role.name}''s permission is not authorized`,
               });
               return;
             }
 
-            if (channelData.role.roleID.indexOf(role.id) == -1) {
-              channelData.role.roleID.push(role.id);
+            if (channelData.role.roleID.indexOf(role.id) != -1) {
+              await interaction.editReply({
+                content: `Role '${role.name}' is already added`,
+              });
+              return;
             }
 
+            channelData.role.roleID.push(role.id);
             await interaction.editReply({
-              content: `Success`,
+              content: `Add role '${role.name}' success`,
             });
             break;
           }
