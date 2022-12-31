@@ -256,42 +256,89 @@ class SettingCommand extends SlashCommand {
           }
         }
       } else {
-        await interaction.deferReply();
+        await interaction.deferReply({ ephemeral: true });
         if (interaction.options.getSubcommandGroup() == "member") {
           switch (interaction.options.getSubcommand()) {
             case "add": {
-              channelData.memberAdd =
-                interaction.options.getChannel("channel")?.id || "";
+              const memberAdd = interaction.options.getChannel("channel");
+              if (!memberAdd) {
+                await interaction.editReply({
+                  content: `No member add channel id`,
+                });
+                return;
+              }
+
+              channelData.memberAdd = memberAdd.id;
+              await interaction.editReply({
+                content: `Set member add channel "${memberAdd.name}" success`,
+              });
               break;
             }
             case "remove": {
-              channelData.memberRemove =
-                interaction.options.getChannel("channel")?.id || "";
+              const memberRemove = interaction.options.getChannel("channel");
+              if (!memberRemove) {
+                await interaction.editReply({
+                  content: `No member remove channel id`,
+                });
+                return;
+              }
+
+              channelData.memberRemove = memberRemove.id;
+              await interaction.editReply({
+                content: `Set member remove channel "${memberRemove.name}" success`,
+              });
               break;
             }
             case "count": {
-              channelData.memberCount =
-                interaction.options.getChannel("channel")?.id || "";
+              const memberCount = interaction.options.getChannel("channel");
+              if (!memberCount) {
+                await interaction.editReply({
+                  content: `No member count channel id`,
+                });
+                return;
+              }
+
+              channelData.memberCount = memberCount.id;
+              await interaction.editReply({
+                content: `Set member count channel "${memberCount.name}" success`,
+              });
               break;
             }
           }
         } else if (interaction.options.getSubcommandGroup() == "stream") {
-          const channelID = interaction.options.getChannel("channel")?.id;
-          if (channelID) {
-            channelData.stream.channelID = channelID;
+          let replyContent = ``;
+          const streamNotify = interaction.options.getChannel("channel");
+          if (streamNotify) {
+            channelData.stream.channelID = streamNotify.id;
+
+            replyContent += `Set stream notify channel "${streamNotify.name}" success\n`;
           }
 
           const streamname = interaction.options.getString("streamname");
           if (streamname) {
             channelData.stream.name = streamname;
+
+            replyContent += `Set streamer name "${streamname}" success`;
           }
+
+          await interaction.editReply({
+            content: replyContent,
+          });
         } else if (interaction.options.getSubcommand() == "portalname") {
           const voicePortal = interaction.options.getString("set");
-          if (voicePortal) {
-            channelData.voicePortal = voicePortal;
+
+          if (!voicePortal) {
+            await interaction.editReply({
+              content: `No portal name`,
+            });
+            return;
           }
+
+          channelData.voicePortal = voicePortal;
+          await interaction.editReply({
+            content: `Set portal "${voicePortal}" success`,
+          });
         }
-        await interaction.deleteReply();
       }
     }
     return channelData;
