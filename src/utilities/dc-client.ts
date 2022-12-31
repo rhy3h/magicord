@@ -330,7 +330,7 @@ class DcClient extends Client {
         await memberAddChannel
           .send(`Member add test`)
           .then(async () => {
-            await interaction.editReply({ content: `Success` });
+            await interaction.editReply({ content: `Member add test success` });
           })
           .catch(async (err) => {
             await interaction.editReply({ content: `${err.message}` });
@@ -351,7 +351,9 @@ class DcClient extends Client {
         await memberRemoveChannel
           .send(`Member remove test`)
           .then(async () => {
-            await interaction.editReply({ content: `Success` });
+            await interaction.editReply({
+              content: `Member remove test success`,
+            });
           })
           .catch(async (err) => {
             await interaction.editReply({ content: `${err.message}` });
@@ -371,7 +373,9 @@ class DcClient extends Client {
         await streamNotifyChannel
           .send(`Stream notify test`)
           .then(async () => {
-            await interaction.editReply({ content: `Success` });
+            await interaction.editReply({
+              content: `Stream notify test success`,
+            });
           })
           .catch(async (err) => {
             await interaction.editReply({ content: `${err.message}` });
@@ -391,7 +395,9 @@ class DcClient extends Client {
         await updateMemberChannel
           .send(`Update Member test`)
           .then(async () => {
-            await interaction.editReply({ content: `Success` });
+            await interaction.editReply({
+              content: `Update Member test success`,
+            });
           })
           .catch(async (err) => {
             await interaction.editReply({ content: `${err.message}` });
@@ -414,7 +420,9 @@ class DcClient extends Client {
             await member?.roles
               .add(roleID)
               .then(async () => {
-                await interaction.editReply({ content: `Success` });
+                await interaction.editReply({
+                  content: `Form add role success`,
+                });
               })
               .catch(async (err) => {
                 await interaction.editReply({ content: `${err.message}` });
