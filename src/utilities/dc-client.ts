@@ -321,28 +321,81 @@ class DcClient extends Client {
         const memberAddChannel = <TextChannel>(
           interaction.client.channels.cache.get(channelData.memberAdd)
         );
-        await memberAddChannel?.send(`Member add test`).catch(() => {});
+        if (!memberAddChannel) {
+          await interaction.editReply({
+            content: `Please set member add channel first`,
+          });
+          return;
+        }
+        await memberAddChannel
+          .send(`Member add test`)
+          .then(async () => {
+            await interaction.editReply({ content: `Success` });
+          })
+          .catch(async (err) => {
+            await interaction.editReply({ content: `${err.message}` });
+          });
+
         break;
       }
       case "member_remove_button": {
         const memberRemoveChannel = <TextChannel>(
           interaction.client.channels.cache.get(channelData.memberRemove)
         );
-        await memberRemoveChannel?.send(`Member remove test`).catch(() => {});
+        if (!memberRemoveChannel) {
+          await interaction.editReply({
+            content: `Please set member remove channel first`,
+          });
+          return;
+        }
+        await memberRemoveChannel
+          .send(`Member remove test`)
+          .then(async () => {
+            await interaction.editReply({ content: `Success` });
+          })
+          .catch(async (err) => {
+            await interaction.editReply({ content: `${err.message}` });
+          });
         break;
       }
       case "stream_notify_button": {
         const streamNotifyChannel = <TextChannel>(
           interaction.client.channels.cache.get(channelData.stream.channelID)
         );
-        await streamNotifyChannel?.send(`Stream notify test`).catch(() => {});
+        if (!streamNotifyChannel) {
+          await interaction.editReply({
+            content: `Please set stream notify channel first`,
+          });
+          return;
+        }
+        await streamNotifyChannel
+          .send(`Stream notify test`)
+          .then(async () => {
+            await interaction.editReply({ content: `Success` });
+          })
+          .catch(async (err) => {
+            await interaction.editReply({ content: `${err.message}` });
+          });
         break;
       }
       case "update_member_button": {
         const updateMemberChannel = <VoiceChannel>(
           interaction.client.channels.cache.get(channelData.memberCount)
         );
-        await updateMemberChannel?.send(`Update Member test`).catch(() => {});
+        if (!updateMemberChannel) {
+          await interaction.editReply({
+            content: `Please set update member channel first`,
+          });
+          return;
+        }
+        await updateMemberChannel
+          .send(`Update Member test`)
+          .then(async () => {
+            await interaction.editReply({ content: `Success` });
+          })
+          .catch(async (err) => {
+            await interaction.editReply({ content: `${err.message}` });
+          });
         break;
       }
       default: {
