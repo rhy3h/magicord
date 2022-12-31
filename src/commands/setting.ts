@@ -242,7 +242,7 @@ class SettingCommand extends SlashCommand {
             break;
           }
           case "remove": {
-            await interaction.deferReply();
+            await interaction.deferReply({ ephemeral: true });
 
             const _role = interaction.options.getRole("role");
 
