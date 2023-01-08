@@ -138,7 +138,7 @@ class DcClient extends Client {
       return false;
     }
 
-    memberCountChannel.setName(`人數 - ${guild.memberCount}`);
+    memberCountChannel.setName(`｜總人數：${guild.memberCount}｜`);
     return true;
   }
 
