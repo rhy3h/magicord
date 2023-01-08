@@ -27,7 +27,7 @@ const client = new DcClient({
 client.once(Events.ClientReady, async () => {
   client.initChannelData();
   client.initHistoryData();
-  client.updateMember();
+  await client.updateMember();
   await client.clearPortal();
   setInterval(async () => {
     // Every 1 minutes detect once

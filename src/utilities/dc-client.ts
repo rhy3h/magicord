@@ -123,36 +123,39 @@ class DcClient extends Client {
     fs.writeFile("./src/channel.json", channelJson);
   }
 
-  public updateMemberCount(guild: Guild) {
-    const memberCountChnnelID = this.channelDatas.get(guild.id)?.memberCount;
-    if (!memberCountChnnelID) {
-      console.log(`"${guild.name}": Please set update member count channel`);
-      return false;
-    }
+  public async updateMemberCount(guild: Guild) {
+    return new Promise<boolean>(async (resolve) => {
+      const memberCountChnnelID = this.channelDatas.get(guild.id)?.memberCount;
+      if (!memberCountChnnelID) {
+        console.log(`"${guild.name}": Please set update member count channel`);
+        resolve(false);
+        return;
+      }
 
-    const memberCountChannel = <TextChannel>(
-      guild.channels.cache.get(memberCountChnnelID)
-    );
-    if (!memberCountChannel) {
-      console.log(`"${guild.name}": Cannot find member count channel`);
-      return false;
-    }
+      const memberCountChannel = <TextChannel>(
+        guild.channels.cache.get(memberCountChnnelID)
+      );
+      if (!memberCountChannel) {
+        console.log(`"${guild.name}": Cannot find member count channel`);
+        resolve(false);
+        return;
+      }
 
-    memberCountChannel.setName(`｜總人數：${guild.memberCount}｜`);
-    return true;
+      await memberCountChannel.setName(`｜總人數：${guild.memberCount}｜`);
+      resolve(true);
+      return;
+    });
   }
 
-  public updateMember() {
-    let flag = false;
+  public async updateMember() {
+    const promises: Promise<boolean>[] = [];
 
     this.guilds.cache.forEach((guild) => {
-      let result = this.updateMemberCount(guild);
-      if (!result) {
-        flag = true;
-      }
+      promises.push(this.updateMemberCount(guild));
     });
 
-    if (flag) {
+    let result = await Promise.all(promises);
+    if (result.findIndex((r) => r == false) > -1) {
       console.log();
     }
   }
