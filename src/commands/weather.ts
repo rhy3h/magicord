@@ -34,15 +34,34 @@ class SettingCommand extends SlashCommand {
           })
           .addChannelOption((option) =>
             option
-              .setName(this.command.subCommands.morning.option.name)
+              .setName(this.command.subCommands.morning.option.temperature.name)
               .setNameLocalizations({
-                "zh-TW": this.commandTW.subCommands.morning.option.name,
+                "zh-TW":
+                  this.commandTW.subCommands.morning.option.temperature.name,
               })
               .setDescription(
-                this.command.subCommands.morning.option.description
+                this.command.subCommands.morning.option.temperature.description
               )
               .setDescriptionLocalizations({
-                "zh-TW": this.commandTW.subCommands.morning.option.description,
+                "zh-TW":
+                  this.commandTW.subCommands.morning.option.temperature
+                    .description,
+              })
+              .addChannelTypes(ChannelType.GuildText)
+              .setRequired(true)
+          )
+          .addChannelOption((option) =>
+            option
+              .setName(this.command.subCommands.morning.option.rain.name)
+              .setNameLocalizations({
+                "zh-TW": this.commandTW.subCommands.morning.option.rain.name,
+              })
+              .setDescription(
+                this.command.subCommands.morning.option.rain.description
+              )
+              .setDescriptionLocalizations({
+                "zh-TW":
+                  this.commandTW.subCommands.morning.option.rain.description,
               })
               .addChannelTypes(ChannelType.GuildText)
               .setRequired(true)
@@ -60,16 +79,37 @@ class SettingCommand extends SlashCommand {
           })
           .addChannelOption((option) =>
             option
-              .setName(this.command.subCommands.afternoon.option.name)
+              .setName(
+                this.command.subCommands.afternoon.option.temperature.name
+              )
               .setNameLocalizations({
-                "zh-TW": this.commandTW.subCommands.afternoon.option.name,
+                "zh-TW":
+                  this.commandTW.subCommands.afternoon.option.temperature.name,
               })
               .setDescription(
-                this.command.subCommands.afternoon.option.description
+                this.command.subCommands.afternoon.option.temperature
+                  .description
               )
               .setDescriptionLocalizations({
                 "zh-TW":
-                  this.commandTW.subCommands.afternoon.option.description,
+                  this.commandTW.subCommands.afternoon.option.temperature
+                    .description,
+              })
+              .addChannelTypes(ChannelType.GuildText)
+              .setRequired(true)
+          )
+          .addChannelOption((option) =>
+            option
+              .setName(this.command.subCommands.afternoon.option.rain.name)
+              .setNameLocalizations({
+                "zh-TW": this.commandTW.subCommands.afternoon.option.rain.name,
+              })
+              .setDescription(
+                this.command.subCommands.afternoon.option.rain.description
+              )
+              .setDescriptionLocalizations({
+                "zh-TW":
+                  this.commandTW.subCommands.afternoon.option.rain.description,
               })
               .addChannelTypes(ChannelType.GuildText)
               .setRequired(true)
@@ -87,13 +127,34 @@ class SettingCommand extends SlashCommand {
           })
           .addChannelOption((option) =>
             option
-              .setName(this.command.subCommands.night.option.name)
+              .setName(this.command.subCommands.night.option.temperature.name)
               .setNameLocalizations({
-                "zh-TW": this.commandTW.subCommands.night.option.name,
+                "zh-TW":
+                  this.commandTW.subCommands.night.option.temperature.name,
               })
-              .setDescription(this.command.subCommands.night.option.description)
+              .setDescription(
+                this.command.subCommands.night.option.temperature.description
+              )
               .setDescriptionLocalizations({
-                "zh-TW": this.commandTW.subCommands.night.option.description,
+                "zh-TW":
+                  this.commandTW.subCommands.night.option.temperature
+                    .description,
+              })
+              .addChannelTypes(ChannelType.GuildText)
+              .setRequired(true)
+          )
+          .addChannelOption((option) =>
+            option
+              .setName(this.command.subCommands.night.option.rain.name)
+              .setNameLocalizations({
+                "zh-TW": this.commandTW.subCommands.night.option.rain.name,
+              })
+              .setDescription(
+                this.command.subCommands.night.option.rain.description
+              )
+              .setDescriptionLocalizations({
+                "zh-TW":
+                  this.commandTW.subCommands.night.option.rain.description,
               })
               .addChannelTypes(ChannelType.GuildText)
               .setRequired(true)
@@ -108,31 +169,45 @@ class SettingCommand extends SlashCommand {
   ) {
     await interaction.deferReply({ ephemeral: true });
 
-    const weatherChannel = interaction.options.getChannel(
-      this.command.subCommands.morning.option.name
+    const temperatureChannel = interaction.options.getChannel(
+      this.command.subCommands.morning.option.temperature.name
     );
-    if (!weatherChannel) {
+    if (!temperatureChannel) {
       await interaction.editReply({
-        content: `No channel id`,
+        content: `No temperature channel id`,
       });
       return;
     }
+
+    const rainChannel = interaction.options.getChannel(
+      this.command.subCommands.morning.option.rain.name
+    );
+    if (!rainChannel) {
+      await interaction.editReply({
+        content: `No rain channel id`,
+      });
+      return;
+    }
+
     switch (time) {
       case this.command.subCommands.morning.name: {
-        channelData.weather.morning = weatherChannel.id;
+        channelData.weather.morning.temperature = temperatureChannel.id;
+        channelData.weather.morning.pop = rainChannel.id;
         break;
       }
       case this.command.subCommands.afternoon.name: {
-        channelData.weather.afternoon = weatherChannel.id;
+        channelData.weather.afternoon.temperature = temperatureChannel.id;
+        channelData.weather.afternoon.pop = rainChannel.id;
         break;
       }
       case this.command.subCommands.night.name: {
-        channelData.weather.night = weatherChannel.id;
+        channelData.weather.night.temperature = temperatureChannel.id;
+        channelData.weather.night.pop = rainChannel.id;
         break;
       }
     }
     await interaction.editReply({
-      content: `Set weather channel "${weatherChannel.name}" success\n`,
+      content: `Set weather temperature channel "${temperatureChannel.name}" success\nSet weather rain channel "${rainChannel.name}" success\n`,
     });
 
     return channelData;

@@ -26,7 +26,7 @@ import { client_id, client_secret } from "../twitch/config.json";
 import * as channels from "../channel.json";
 import * as history from "./history.json";
 
-import { WeatherAPI } from "../weather";
+import { IWeather, WeatherAPI } from "../weather";
 
 interface IChannel {
   memberAdd: string;
@@ -42,9 +42,9 @@ interface IChannel {
     message: string;
   };
   weather: {
-    morning: string;
-    afternoon: string;
-    night: string;
+    morning: IWeather;
+    afternoon: IWeather;
+    night: IWeather;
   };
 }
 
@@ -111,9 +111,15 @@ class DcClient extends Client {
           message: "",
         },
         weather: {
-          morning: "",
-          afternoon: "",
-          night: "",
+          morning: {
+            temperature: "",
+            pop: "",
+          },
+          afternoon: {
+            temperature: "",
+            pop: "",
+          },
+          night: { temperature: "", pop: "" },
         },
       };
       this.channelDatas.set(id, channelData);
@@ -212,38 +218,56 @@ class DcClient extends Client {
     this.updateMemberCount(member.guild);
   }
 
-  private async updateWeaterPrediction(guild: Guild, weather: []) {
+  private async updateWeaterPrediction(guild: Guild, weather: Array<IWeather>) {
     const timeStamp = ["早", "中", "晚"];
-    const weatherChannelID: Array<string> = [];
-    const morningChannelID =
-      this.channelDatas.get(guild.id)?.weather.morning || "";
-    const afternoonChannelID =
-      this.channelDatas.get(guild.id)?.weather.afternoon || "";
-    const nightChannelID = this.channelDatas.get(guild.id)?.weather.night || "";
-    weatherChannelID.push(morningChannelID, afternoonChannelID, nightChannelID);
+    const temperatureChannelID: Array<string> = [];
+    const morningTemperatureChannelID =
+      this.channelDatas.get(guild.id)?.weather.morning.temperature || "";
+    const afternoonTemperatureChannelID =
+      this.channelDatas.get(guild.id)?.weather.afternoon.temperature || "";
+    const nightTemperatureChannelID =
+      this.channelDatas.get(guild.id)?.weather.night.temperature || "";
+    temperatureChannelID.push(
+      morningTemperatureChannelID,
+      afternoonTemperatureChannelID,
+      nightTemperatureChannelID
+    );
+
+    const rainChannelID: Array<string> = [];
+    const morningRainChannelID =
+      this.channelDatas.get(guild.id)?.weather.morning.pop || "";
+    const afternoonRainChannelID =
+      this.channelDatas.get(guild.id)?.weather.afternoon.pop || "";
+    const nightRainChannelID =
+      this.channelDatas.get(guild.id)?.weather.night.pop || "";
+    rainChannelID.push(
+      morningRainChannelID,
+      afternoonRainChannelID,
+      nightRainChannelID
+    );
 
     const promises: Promise<boolean>[] = [];
     for (let i = 0; i < timeStamp.length; i++) {
       const promise = new Promise<boolean>(async (resolve) => {
-        const weatherChannel = <TextChannel>(
-          guild.channels.cache.get(weatherChannelID[i])
+        const temperatureChannel = <TextChannel>(
+          guild.channels.cache.get(temperatureChannelID[i])
         );
-        if (!weatherChannel) {
+        const rainChannel = <TextChannel>(
+          guild.channels.cache.get(rainChannelID[i])
+        );
+
+        if (!temperatureChannel || !rainChannel) {
           console.log(
-            `"${guild.name}": Cannot find "${timeStamp[i]}" weather channel`
+            `"${guild.name}": Cannot find "${timeStamp[i]}" temperature or rain channel`
           );
           resolve(false);
           return;
         }
 
-        await weatherChannel
-          .setName(`${timeStamp[i]}：${weather[i]}`)
-          .then(() => {
-            resolve(true);
-          })
-          .catch(() => {
-            resolve(false);
-          });
+        await temperatureChannel.setName(
+          `${timeStamp[i]}：${weather[i].temperature}`
+        );
+        await rainChannel.setName(`${weather[i].pop}`);
       });
       promises.push(promise);
     }
@@ -252,11 +276,12 @@ class DcClient extends Client {
   }
 
   public async updateWeather() {
-    let weather = <any>(
-      await new WeatherAPI(weatherApiKey).getTaipeiWeather().catch(() => {
-        return;
-      })
-    );
+    let weather = await new WeatherAPI(weatherApiKey).getTaipeiWeather();
+
+    if (!weather) {
+      return;
+    }
+
     const promises: Promise<boolean[]>[] = [];
     this.guilds.cache.forEach((guild) => {
       promises.push(this.updateWeaterPrediction(guild, weather));
