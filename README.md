@@ -8,6 +8,7 @@
  - Voice channel portal
  - Twitch live notify
  - Reply button get role
+ - Weather prediction
 
 ### Compiles and development
 ```
