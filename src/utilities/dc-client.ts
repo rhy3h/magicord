@@ -5,6 +5,7 @@ import {
   Client,
   ClientOptions,
   Collection,
+  Guild,
   GuildMember,
   ModalSubmitInteraction,
   PartialGuildMember,
@@ -154,12 +155,34 @@ class DcClient extends Client {
     });
   }
 
+  public updateMemberCount(guild: Guild) {
+    const memberCountChnnelID = this.channelDatas.get(guild.id)?.memberCount;
+    if (!memberCountChnnelID) {
+      console.log(
+        `updateMemberCount(): Please set update member channel first`
+      );
+      return;
+    }
+
+    const memberCountChannel = <TextChannel>(
+      guild.channels.cache.get(memberCountChnnelID)
+    );
+    if (!memberCountChannel) {
+      console.log(`updateMemberCount(): Cannot find member count channel`);
+      return;
+    }
+
+    memberCountChannel.setName(`人數 - ${guild.memberCount}`);
+  }
+
   public guildMemberAdd(member: GuildMember) {
     const channelID = this.channelDatas.get(member.guild.id)?.memberAdd || "";
     const memberAddChannel = <TextChannel>(
       member.client.channels.cache.get(channelID)
     );
     memberAddChannel?.send(`<@${member.user.id}> Welcome`).catch(() => {});
+
+    this.updateMemberCount(member.guild);
   }
 
   public guildMemberRemove(member: GuildMember | PartialGuildMember) {
@@ -169,6 +192,8 @@ class DcClient extends Client {
       member.client.channels.cache.get(channelID)
     );
     memberRemoveChannel?.send(`<@${member.user.id}> Left`).catch(() => {});
+
+    this.updateMemberCount(member.guild);
   }
 
   public async clearPortal() {
