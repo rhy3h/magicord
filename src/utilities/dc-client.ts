@@ -431,7 +431,7 @@ class DcClient extends Client {
     }
   }
   public async executeModal(interaction: ModalSubmitInteraction) {
-    await interaction.deferReply();
+    await interaction.deferReply({ ephemeral: true });
 
     if (!interaction.guildId) {
       return;
@@ -446,7 +446,9 @@ class DcClient extends Client {
     const channelJson = JSON.stringify(Object.fromEntries(this.channelDatas));
     fs.writeFile("./src/channel.json", channelJson);
 
-    await interaction.deleteReply();
+    await interaction.editReply({
+      content: `Set role message success`,
+    });
   }
 }
 
