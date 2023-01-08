@@ -103,6 +103,36 @@
                     }
                 }
             }
+        },
+        "weather": {
+            "name": "weather",
+            "description": "Weather prediction",
+            "subCommands": {
+                "morning": {
+                    "name": "morning",
+                    "description": "Morning weather prediction",
+                    "option": {
+                        "name": "channel",
+                        "description": "Channel"
+                    }
+                },
+                "afternoon": {
+                    "name": "afternoon",
+                    "description": "Afternoon weather prediction",
+                    "option": {
+                        "name": "channel",
+                        "description": "Channel"
+                    }
+                },
+                "night": {
+                    "name": "night",
+                    "description": "Night weather prediction",
+                    "option": {
+                        "name": "channel",
+                        "description": "Channel"
+                    }
+                }
+            }
         }
     },
     "zh-TW": {
@@ -206,6 +236,36 @@
                     "option": {
                         "name": "傳送門名稱",
                         "description": "設置語音傳送門名稱"
+                    }
+                }
+            }
+        },
+        "weather": {
+            "name": "天氣",
+            "description": "天氣預報",
+            "subCommands": {
+                "morning": {
+                    "name": "早上",
+                    "description": "設置早上天氣預報頻道",
+                    "option": {
+                        "name": "頻道",
+                        "description": "早上天氣預報頻道"
+                    }
+                },
+                "afternoon": {
+                    "name": "下午",
+                    "description": "設置下午天氣預報頻道",
+                    "option": {
+                        "name": "頻道",
+                        "description": "下午天氣預報頻道"
+                    }
+                },
+                "night": {
+                    "name": "晚上",
+                    "description": "設置晚上天氣預報頻道",
+                    "option": {
+                        "name": "頻道",
+                        "description": "晚上天氣預報頻道"
                     }
                 }
             }

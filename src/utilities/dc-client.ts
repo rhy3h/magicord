@@ -21,9 +21,12 @@ import { SlashCommand } from "../components/SlashCommand";
 import { TwitchLive, TwitchStatus } from "../twitch/index";
 import { TwitchNotifyEmbed } from "../components/TwitchNotifyEmbed";
 
+import { weatherApiKey } from "../config.json";
 import { client_id, client_secret } from "../twitch/config.json";
 import * as channels from "../channel.json";
 import * as history from "./history.json";
+
+import { WeatherAPI } from "../weather";
 
 interface IChannel {
   memberAdd: string;
@@ -37,6 +40,11 @@ interface IChannel {
   role: {
     roleID: Array<string>;
     message: string;
+  };
+  weather: {
+    morning: string;
+    afternoon: string;
+    night: string;
   };
 }
 
@@ -101,6 +109,11 @@ class DcClient extends Client {
         role: {
           roleID: [],
           message: "",
+        },
+        weather: {
+          morning: "",
+          afternoon: "",
+          night: "",
         },
       };
       this.channelDatas.set(id, channelData);
@@ -197,6 +210,60 @@ class DcClient extends Client {
     memberRemoveChannel?.send(`<@${member.user.id}> Left`).catch(() => {});
 
     this.updateMemberCount(member.guild);
+  }
+
+  private async updateWeaterPrediction(guild: Guild, weather: []) {
+    const timeStamp = ["早", "中", "晚"];
+    const weatherChannelID: Array<string> = [];
+    const morningChannelID =
+      this.channelDatas.get(guild.id)?.weather.morning || "";
+    const afternoonChannelID =
+      this.channelDatas.get(guild.id)?.weather.afternoon || "";
+    const nightChannelID = this.channelDatas.get(guild.id)?.weather.night || "";
+    weatherChannelID.push(morningChannelID, afternoonChannelID, nightChannelID);
+
+    const promises: Promise<boolean>[] = [];
+    for (let i = 0; i < timeStamp.length; i++) {
+      const promise = new Promise<boolean>(async (resolve) => {
+        const weatherChannel = <TextChannel>(
+          guild.channels.cache.get(weatherChannelID[i])
+        );
+        if (!weatherChannel) {
+          console.log(
+            `"${guild.name}": Cannot find "${timeStamp[i]}" weather channel`
+          );
+          resolve(false);
+          return;
+        }
+
+        await weatherChannel
+          .setName(`${timeStamp[i]}：${weather[i]}`)
+          .then(() => {
+            resolve(true);
+          })
+          .catch(() => {
+            resolve(false);
+          });
+      });
+      promises.push(promise);
+    }
+
+    return Promise.all(promises);
+  }
+
+  public async updateWeather() {
+    let weather = <any>(
+      await new WeatherAPI(weatherApiKey).getTaipeiWeather().catch(() => {
+        return;
+      })
+    );
+    const promises: Promise<boolean[]>[] = [];
+    this.guilds.cache.forEach((guild) => {
+      promises.push(this.updateWeaterPrediction(guild, weather));
+    });
+
+    let result = await Promise.all(promises);
+    console.log();
   }
 
   public async clearPortal() {

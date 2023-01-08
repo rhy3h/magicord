@@ -27,6 +27,7 @@ const client = new DcClient({
 client.once(Events.ClientReady, async () => {
   client.initChannelData();
   client.initHistoryData();
+  await client.updateWeather();
   await client.updateMember();
   await client.clearPortal();
   setInterval(async () => {
