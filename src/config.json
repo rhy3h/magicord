@@ -1,4 +1,5 @@
 {
     "clientId": "",
-    "token": ""
+    "token": "",
+    "weatherApiKey": ""
 }
