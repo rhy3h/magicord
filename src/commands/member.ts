@@ -194,6 +194,7 @@ class SettingCommand extends SlashCommand {
           break;
         }
         default: {
+          await interaction.deferReply({ ephemeral: true });
           await interaction.editReply({
             content: `"${this.command.name}" command cannot find sub command "${subCommand}"`,
           });
