@@ -290,21 +290,15 @@ class DcClient extends Client {
     const slashCommand = <SlashCommand>(
       this.commands.get(interaction.commandName)
     );
-    switch (interaction.commandName) {
-      case "setting": {
-        await slashCommand?.execute(interaction, channelData);
+    const newChannelData = await slashCommand?.execute(
+      interaction,
+      channelData
+    );
 
-        this.channelDatas.set(interaction.guildId, channelData);
-        const channelJson = JSON.stringify(
-          Object.fromEntries(this.channelDatas)
-        );
-        fs.writeFile("./src/channel.json", channelJson);
-        break;
-      }
-      case "test": {
-        slashCommand?.execute(interaction, channelData);
-        break;
-      }
+    if (newChannelData) {
+      this.channelDatas.set(interaction.guildId, channelData);
+      const channelJson = JSON.stringify(Object.fromEntries(this.channelDatas));
+      fs.writeFile("./src/channel.json", channelJson);
     }
   }
 

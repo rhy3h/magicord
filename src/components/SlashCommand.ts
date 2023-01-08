@@ -9,7 +9,7 @@ abstract class SlashCommand extends SlashCommandBuilder {
   abstract execute(
     interaction: ChatInputCommandInteraction,
     channelData: IChannel
-  ): void;
+  ): Promise<IChannel | undefined>;
 }
 
 export { SlashCommand };

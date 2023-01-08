@@ -17,11 +17,15 @@ class TestCommand extends SlashCommand {
     interaction: ChatInputCommandInteraction,
     channelData: IChannel
   ) {
-    const component = new Test(interaction, channelData);
+    return new Promise<IChannel | undefined>(async (resolve) => {
+      const component = new Test(interaction, channelData);
 
-    await interaction.reply({
-      embeds: component.embed,
-      components: component.row,
+      await interaction.reply({
+        embeds: component.embed,
+        components: component.row,
+      });
+
+      resolve(undefined);
     });
   }
 }
