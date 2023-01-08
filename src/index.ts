@@ -7,6 +7,8 @@ import {
 import { token } from "./config.json";
 import { DcClient } from "./utilities/dc-client";
 
+import { scheduleJob } from "node-schedule";
+
 const client = new DcClient({
   intents: [
     GatewayIntentBits.Guilds,
@@ -34,6 +36,12 @@ client.once(Events.ClientReady, async () => {
     // Every 1 minutes detect once
     await client.notifyStream();
   }, 1 * 60 * 1000);
+
+  scheduleJob("* 6 * * *", () => {
+    // Everyday 6.am update weather prediction
+    console.log(`Update weather pediction`);
+    client.updateWeather();
+  });
 
   console.log(`Discord Bot "${client.user?.tag}" is ready!`);
 });
