@@ -123,18 +123,38 @@ class DcClient extends Client {
     fs.writeFile("./src/channel.json", channelJson);
   }
 
+  public updateMemberCount(guild: Guild) {
+    const memberCountChnnelID = this.channelDatas.get(guild.id)?.memberCount;
+    if (!memberCountChnnelID) {
+      console.log(`"${guild.name}": Please set update member count channel`);
+      return false;
+    }
+
+    const memberCountChannel = <TextChannel>(
+      guild.channels.cache.get(memberCountChnnelID)
+    );
+    if (!memberCountChannel) {
+      console.log(`"${guild.name}": Cannot find member count channel`);
+      return false;
+    }
+
+    memberCountChannel.setName(`人數 - ${guild.memberCount}`);
+    return true;
+  }
+
   public updateMember() {
+    let flag = false;
+
     this.guilds.cache.forEach((guild) => {
-      const { id } = guild;
-      if (!this.channelDatas.get(id)) {
-        return;
-      }
-      const channelData = this.channelDatas.get(id);
-      if (channelData?.memberCount) {
-        const channel = guild.channels.cache.get(channelData?.memberCount);
-        channel?.setName(`人數: ${guild.memberCount}`);
+      let result = this.updateMemberCount(guild);
+      if (!result) {
+        flag = true;
       }
     });
+
+    if (flag) {
+      console.log();
+    }
   }
 
   private getChannelFromJson() {
@@ -153,26 +173,6 @@ class DcClient extends Client {
       }
       this.hisotryDatas.set(key, <string[]>data);
     });
-  }
-
-  public updateMemberCount(guild: Guild) {
-    const memberCountChnnelID = this.channelDatas.get(guild.id)?.memberCount;
-    if (!memberCountChnnelID) {
-      console.log(
-        `updateMemberCount(): Please set update member channel first`
-      );
-      return;
-    }
-
-    const memberCountChannel = <TextChannel>(
-      guild.channels.cache.get(memberCountChnnelID)
-    );
-    if (!memberCountChannel) {
-      console.log(`updateMemberCount(): Cannot find member count channel`);
-      return;
-    }
-
-    memberCountChannel.setName(`人數 - ${guild.memberCount}`);
   }
 
   public guildMemberAdd(member: GuildMember) {
