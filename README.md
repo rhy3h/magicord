@@ -1,6 +1,6 @@
 # Discord Bot
 
-[![wakatime](https://wakatime.com/badge/github/rhy3h/discord-bot.svg)](https://wakatime.com/badge/github/rhy3h/discord-bot)
+[![wakatime](https://wakatime.com/badge/github/rhy3h/magicord.svg)](https://wakatime.com/badge/github/rhy3h/magicord)
 
 ## Function
 
