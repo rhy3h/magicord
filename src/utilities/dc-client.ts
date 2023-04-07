@@ -21,7 +21,6 @@ import { SlashCommand } from "../components/SlashCommand";
 import { TwitchLive, TwitchStatus } from "../twitch/index";
 import { TwitchNotifyEmbed } from "../components/TwitchNotifyEmbed";
 
-import { weatherApiKey } from "../config.json";
 import { client_id, client_secret } from "../twitch/config.json";
 import * as channels from "../channel.json";
 import * as history from "./history.json";
@@ -276,19 +275,16 @@ class DcClient extends Client {
   }
 
   public async updateWeather() {
-    let weather = await new WeatherAPI(weatherApiKey).getTaipeiWeather();
-
-    if (!weather) {
-      return;
-    }
-
-    const promises: Promise<boolean[]>[] = [];
-    this.guilds.cache.forEach((guild) => {
-      promises.push(this.updateWeaterPrediction(guild, weather));
-    });
-
-    let result = await Promise.all(promises);
-    console.log();
+    // let weather = await new WeatherAPI(weatherApiKey).getTaipeiWeather();
+    // if (!weather) {
+    //   return;
+    // }
+    // const promises: Promise<boolean[]>[] = [];
+    // this.guilds.cache.forEach((guild) => {
+    //   promises.push(this.updateWeaterPrediction(guild, weather));
+    // });
+    // let result = await Promise.all(promises);
+    // console.log();
   }
 
   public async clearPortal() {

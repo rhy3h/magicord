@@ -4,7 +4,6 @@ import {
   Partials,
   PermissionsBitField,
 } from "discord.js";
-import { token } from "./config.json";
 import { DcClient } from "./utilities/dc-client";
 
 import { scheduleJob } from "node-schedule";
@@ -84,4 +83,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-client.login(token);
+client.login(process.env.bot_access_token);
