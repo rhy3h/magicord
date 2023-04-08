@@ -26,21 +26,14 @@ const client = new DcClient({
 
 // Discord bot on ready
 client.once(Events.ClientReady, async () => {
-  client.initChannelData();
+  await client.initDatabase();
   client.initHistoryData();
-  await client.updateWeather();
   await client.updateMember();
   await client.clearPortal();
   setInterval(async () => {
     // Every 1 minutes detect once
     await client.notifyStream();
   }, 1 * 60 * 1000);
-
-  scheduleJob("* 6 * * *", () => {
-    // Everyday 6.am update weather prediction
-    console.log(`Update weather pediction`);
-    client.updateWeather();
-  });
 
   console.log(`Discord Bot "${client.user?.tag}" is ready!`);
 });
@@ -67,19 +60,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
   );
   if (!memberPermision) {
     return;
-  }
-
-  // Slash Commands
-  if (interaction.isChatInputCommand()) {
-    client.executeChatInputCommand(interaction);
-  }
-  // Button
-  if (interaction.isButton()) {
-    await client.executeButton(interaction);
-  }
-  // Modal
-  if (interaction.isModalSubmit()) {
-    await client.executeModal(interaction);
   }
 });
 
