@@ -18,4 +18,15 @@ export class DataBase {
 
     return JSON.parse(new TextDecoder().decode(buffer));
   }
+
+  public async update(guild_id: string, data: DB | HistoryDB) {
+    try {
+      await fs.writeFile(
+        `${this.location}/${guild_id}.json`,
+        JSON.stringify(data)
+      );
+    } catch (error) {
+      throw new Error("DB not exist");
+    }
+  }
 }
