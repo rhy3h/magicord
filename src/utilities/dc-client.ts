@@ -34,6 +34,8 @@ class DcClient extends Client {
   }
 
   public async initDatabase() {
+    console.log(`Loading database...`);
+
     const promises: Array<Promise<boolean>> = [];
 
     this.guilds.cache.forEach((guild) => {
@@ -49,6 +51,8 @@ class DcClient extends Client {
     });
 
     await Promise.all(promises);
+
+    console.log(`Finished...`);
   }
 
   public async initHistoryDatabase() {
