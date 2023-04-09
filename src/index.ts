@@ -48,6 +48,16 @@ client.on(Events.GuildMemberRemove, (member) => {
   client.guildMemberRemove(member);
 });
 
+// Message Reaction Add
+client.on(Events.MessageReactionAdd, (emoji, user) => {
+  client.messageReactionAdd(emoji, user);
+});
+
+// Message Reaction Remove
+client.on(Events.MessageReactionRemove, (emoji, user) => {
+  client.messageReactionRemove(emoji, user);
+});
+
 // Voice portal
 client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
   await client.portVoiceChannel(oldState, newState);

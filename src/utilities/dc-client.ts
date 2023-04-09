@@ -5,8 +5,12 @@ import {
   Collection,
   Guild,
   GuildMember,
+  MessageReaction,
   PartialGuildMember,
+  PartialMessageReaction,
+  PartialUser,
   TextChannel,
+  User,
   VoiceChannel,
   VoiceState,
 } from "discord.js";
@@ -158,6 +162,94 @@ class DcClient extends Client {
 
     channel
       .send(`<@${member.user.id}> ${data.guild_member_remove.message}`)
+      .catch(() => {});
+  }
+
+  public async messageReactionAdd(
+    emoji: MessageReaction | PartialMessageReaction,
+    user: User | PartialUser
+  ) {
+    const data = this.database.get(emoji.message.guildId as string);
+    if (!data) {
+      return;
+    }
+
+    const reationRoles = data.reaction_roles.find(
+      (f) => f.message_id == emoji.message.id
+    );
+    if (!reationRoles) {
+      return;
+    }
+
+    const reationRole = reationRoles.reactions.find(
+      (f) => f.emoji_id == emoji.emoji.id
+    );
+    if (!reationRole) {
+      return;
+    }
+
+    const guild = this.guilds.cache.get(emoji.message.guildId as string);
+    if (!guild) {
+      return;
+    }
+
+    const member = guild.members.cache.get(user.id);
+    if (!member) {
+      return;
+    }
+
+    const role = guild.roles.cache.get(reationRole.role_id);
+    if (!role) {
+      return;
+    }
+
+    member.roles
+      .add(role.id)
+      .then(() => {})
+      .catch(() => {});
+  }
+
+  public messageReactionRemove(
+    emoji: MessageReaction | PartialMessageReaction,
+    user: User | PartialUser
+  ) {
+    const data = this.database.get(emoji.message.guildId as string);
+    if (!data) {
+      return;
+    }
+
+    const reationRoles = data.reaction_roles.find(
+      (f) => f.message_id == emoji.message.id
+    );
+    if (!reationRoles) {
+      return;
+    }
+
+    const reationRole = reationRoles.reactions.find(
+      (f) => f.emoji_id == emoji.emoji.id
+    );
+    if (!reationRole) {
+      return;
+    }
+
+    const guild = this.guilds.cache.get(emoji.message.guildId as string);
+    if (!guild) {
+      return;
+    }
+
+    const member = guild.members.cache.get(user.id);
+    if (!member) {
+      return;
+    }
+
+    const role = guild.roles.cache.get(reationRole.role_id);
+    if (!role) {
+      return;
+    }
+
+    member.roles
+      .remove(role.id)
+      .then(() => {})
       .catch(() => {});
   }
 
