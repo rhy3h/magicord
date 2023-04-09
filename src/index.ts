@@ -63,4 +63,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-client.login(process.env.bot_access_token);
+client.login(process.env.magicord_access_token);

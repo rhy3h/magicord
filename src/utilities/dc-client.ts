@@ -10,13 +10,11 @@ import {
   VoiceChannel,
   VoiceState,
 } from "discord.js";
-import fs from "fs/promises";
 
 import { TwitchLive, TwitchStatus } from "../twitch/index";
 import { TwitchNotifyEmbed } from "../components/TwitchNotifyEmbed";
 
 import { DataBase } from "../database.ts";
-import { client_id, client_secret } from "../twitch/config.json";
 
 const portalNameRegex = /^.+-.+#[0-9]+$/;
 
@@ -30,7 +28,10 @@ class DcClient extends Client {
 
     this.database = new Collection();
     this.hisotryDatas = new Collection();
-    this.twitchLive = new TwitchLive(client_id, client_secret);
+    this.twitchLive = new TwitchLive(
+      process.env.twitch_client_id as string,
+      process.env.twitch_client_secret as string
+    );
   }
 
   public async initDatabase() {

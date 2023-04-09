@@ -4,7 +4,7 @@ import path from "path";
 
 // Construct and prepare an instance of the REST module
 const rest = new REST({ version: "10" }).setToken(
-  process.env.bot_access_token as string
+  process.env.magicord_access_token as string
 );
 
 (async () => {
@@ -23,7 +23,7 @@ const rest = new REST({ version: "10" }).setToken(
   try {
     // The put method is used to fully refresh all commands in the guild with the current set
     await rest.put(
-      Routes.applicationCommands(process.env.client_id as string),
+      Routes.applicationCommands(process.env.magicord_client_id as string),
       {
         body: commands,
       }
