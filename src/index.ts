@@ -6,8 +6,6 @@ import {
 } from "discord.js";
 import { DcClient } from "./utilities/dc-client";
 
-import { scheduleJob } from "node-schedule";
-
 const client = new DcClient({
   intents: [
     GatewayIntentBits.Guilds,
