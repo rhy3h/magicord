@@ -42,7 +42,9 @@ class DcClient extends Client {
     this.guilds.cache.forEach((guild) => {
       promises.push(
         new Promise(async (resolve) => {
-          const db = await new DataBase(guild.id).select();
+          const db = await new DataBase(
+            `${process.env.APPDATA}/magicord-db`
+          ).select(guild.id);
           this.database.set(guild.id, db);
           resolve(true);
         })
