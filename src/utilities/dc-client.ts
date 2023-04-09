@@ -17,13 +17,12 @@ import { TwitchNotifyEmbed } from "../components/TwitchNotifyEmbed";
 
 import { DataBase } from "../database.ts";
 import { client_id, client_secret } from "../twitch/config.json";
-import * as history from "./history.json";
 
 const portalNameRegex = /^.+-.+#[0-9]+$/;
 
 class DcClient extends Client {
   private database: Collection<string, DB>;
-  private hisotryDatas: Collection<string, Array<string>>;
+  private hisotryDatas: Collection<string, HistoryDB>;
   private twitchLive: TwitchLive;
 
   constructor(options: ClientOptions) {
@@ -32,8 +31,6 @@ class DcClient extends Client {
     this.database = new Collection();
     this.hisotryDatas = new Collection();
     this.twitchLive = new TwitchLive(client_id, client_secret);
-
-    this.getHistoryFromJson();
   }
 
   public async initDatabase() {
@@ -54,14 +51,32 @@ class DcClient extends Client {
     await Promise.all(promises);
   }
 
-  public initHistoryData() {
+  public async initHistoryDatabase() {
+    console.log(`Loading history database...`);
+
+    const promises: Array<Promise<boolean>> = [];
+
     this.guilds.cache.forEach((guild) => {
-      const { id } = guild;
-      if (this.hisotryDatas.get(id)) {
-        return;
-      }
-      this.hisotryDatas.set(id, []);
+      promises.push(
+        new Promise(async (resolve) => {
+          try {
+            const historyDataBase = await new DataBase(
+              `${process.env.APPDATA}/magicord-db/history`
+            ).select(guild.id);
+            this.hisotryDatas.set(guild.id, historyDataBase);
+          } catch (error) {
+            this.hisotryDatas.set(guild.id, {
+              twitch: [],
+            });
+          }
+          resolve(true);
+        })
+      );
     });
+
+    await Promise.all(promises);
+
+    console.log(`Finished...`);
   }
 
   public async updateMemberCount(guild: Guild) {
@@ -99,15 +114,6 @@ class DcClient extends Client {
     });
 
     await Promise.all(promises);
-  }
-
-  private getHistoryFromJson() {
-    Object.entries(history).forEach(([key, data], index) => {
-      if (key == "default") {
-        return;
-      }
-      this.hisotryDatas.set(key, <string[]>data);
-    });
   }
 
   public guildMemberAdd(member: GuildMember) {
@@ -239,21 +245,31 @@ class DcClient extends Client {
             return;
           }
 
-          const notifyHistory = this.hisotryDatas
-            .get(guild.id)
-            ?.find((date) => date == streamStatus?.started_at);
+          const hisotryData = this.hisotryDatas.get(guild.id);
+          if (!hisotryData) {
+            resolve(true);
+            return;
+          }
+          const notifyHistory = hisotryData.twitch.find(
+            (f) => f == streamStatus.started_at
+          );
           if (notifyHistory) {
             resolve(true);
             return;
           }
-          this.hisotryDatas.get(guild.id)?.push(streamStatus?.started_at);
-          const server = this.guilds.cache.get(guild.id);
+          hisotryData.twitch.push(streamStatus.started_at);
+
           const streamNotifyChannel = <TextChannel>(
-            server?.channels.cache.get(data.social_alert.twitch.id)
+            guild.channels.cache.get(data.social_alert.twitch.id)
           );
+          if (!streamNotifyChannel) {
+            resolve(true);
+            return;
+          }
+
           const twitchNotifyMessage = new TwitchNotifyEmbed(streamStatus);
           streamNotifyChannel
-            ?.send({
+            .send({
               embeds: [twitchNotifyMessage.embed],
               components: [twitchNotifyMessage.row],
             })
@@ -262,14 +278,16 @@ class DcClient extends Client {
         })
       );
     });
+
     Promise.all(promises)
       .catch(() => {})
       .finally(() => {
-        // TODO: Write to firebase, or dbsqlite
-        const historyJson = JSON.stringify(
-          Object.fromEntries(this.hisotryDatas)
-        );
-        fs.writeFile("./src/utilities/history.json", historyJson);
+        this.hisotryDatas.each((historyData, key) => {
+          new DataBase(`${process.env.APPDATA}/magicord-db/history`).update(
+            key,
+            historyData
+          );
+        });
       });
   }
 }

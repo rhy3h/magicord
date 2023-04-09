@@ -35,3 +35,7 @@ interface DB {
   reaction_roles: Array<ReactionRoles>;
   member_count: string;
 }
+
+interface HistoryDB {
+  twitch: Array<string>;
+}
