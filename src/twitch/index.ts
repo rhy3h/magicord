@@ -1,4 +1,4 @@
-import request from "request";
+import axios from "axios";
 
 class TwitchStatus {
   public title: string;
@@ -36,38 +36,29 @@ class TwitchLive {
 
   private getAccessToken() {
     return new Promise((resolve) => {
-      request.post(
-        {
-          url: "https://id.twitch.tv/oauth2/token",
-          json: true,
-          body: {
-            client_id: this.client_id,
-            client_secret: this.client_secret,
-            grant_type: "client_credentials",
-          },
-        },
-        (error, response, body) => {
-          resolve(body);
-        }
-      );
+      axios
+        .post("https://id.twitch.tv/oauth2/token", {
+          client_id: this.client_id,
+          client_secret: this.client_secret,
+          grant_type: "client_credentials",
+        })
+        .then((result) => resolve(result.data));
     });
   }
 
   private getStream(access_token: string, streamer_name: string) {
     return new Promise((resolve) => {
-      request.get(
-        {
-          url: `https://api.twitch.tv/helix/streams?user_login=${streamer_name}`,
-          json: true,
-          headers: {
-            "Client-ID": this.client_id,
-            Authorization: `Bearer ${access_token}`,
-          },
-        },
-        (error, response, body) => {
-          resolve(body?.data);
-        }
-      );
+      axios
+        .get(
+          `https://api.twitch.tv/helix/streams?user_login=${streamer_name}`,
+          {
+            headers: {
+              "Client-ID": this.client_id,
+              Authorization: `Bearer ${access_token}`,
+            },
+          }
+        )
+        .then((result) => resolve(result.data.data));
     });
   }
 

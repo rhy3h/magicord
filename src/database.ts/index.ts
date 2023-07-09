@@ -1,4 +1,4 @@
-import fs from "fs/promises";
+import fs from "fs-extra";
 
 export class DataBase {
   private location: string;
@@ -8,25 +8,26 @@ export class DataBase {
   }
 
   public async select(guild_id: string) {
-    let buffer: Buffer;
+    const filename = `${this.location}/${guild_id}.json`;
 
-    try {
-      buffer = await fs.readFile(`${this.location}/${guild_id}.json`);
-    } catch (error) {
-      throw new Error("DB not exist");
+    const result = await fs.exists(filename);
+    if (!result) {
+      await fs.outputJSON(filename, {
+        twitch: [],
+      });
     }
 
+    let buffer = await fs.readFile(filename);
     return JSON.parse(new TextDecoder().decode(buffer));
   }
 
-  public async update(guild_id: string, data: DB | HistoryDB) {
+  public async update(guild_id: string, data: HistoryDB) {
+    const filename = `${this.location}/${guild_id}.json`;
+
     try {
-      await fs.writeFile(
-        `${this.location}/${guild_id}.json`,
-        JSON.stringify(data)
-      );
+      await fs.writeFile(filename, JSON.stringify(data));
     } catch (error) {
-      throw new Error("DB not exist");
+      console.log(error);
     }
   }
 }

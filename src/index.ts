@@ -5,6 +5,9 @@ import {
   PermissionsBitField,
 } from "discord.js";
 import { DcClient } from "./utilities/dc-client";
+import { config } from "dotenv";
+
+config();
 
 const client = new DcClient({
   intents: [
@@ -24,9 +27,9 @@ const client = new DcClient({
 
 // Discord bot on ready
 client.once(Events.ClientReady, async () => {
-  await client.initDatabase();
+  await client.fetchDatabase();
   await client.initHistoryDatabase();
-  await client.updateMember();
+  await client.updateGuildsMemberCount();
   await client.clearPortal();
   setInterval(async () => {
     // Every 1 minutes detect once
@@ -71,4 +74,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-client.login(process.env.magicord_access_token);
+client.login(process.env.MAGICORD_ACCESS_TOKEN);

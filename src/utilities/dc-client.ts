@@ -9,6 +9,7 @@ import {
   PartialGuildMember,
   PartialMessageReaction,
   PartialUser,
+  Snowflake,
   TextChannel,
   User,
   VoiceChannel,
@@ -19,11 +20,12 @@ import { TwitchLive, TwitchStatus } from "../twitch/index";
 import { TwitchNotifyEmbed } from "../components/TwitchNotifyEmbed";
 
 import { DataBase } from "../database.ts";
+import axios from "axios";
 
-const portalNameRegex = /^.+-.+#[0-9]+$/;
+const portalNameRegex = /^.+-#.+$/;
 
 class DcClient extends Client {
-  private database: Collection<string, DB>;
+  private database: Collection<string, Guilds>;
   private hisotryDatas: Collection<string, HistoryDB>;
   private twitchLive: TwitchLive;
 
@@ -33,23 +35,29 @@ class DcClient extends Client {
     this.database = new Collection();
     this.hisotryDatas = new Collection();
     this.twitchLive = new TwitchLive(
-      process.env.twitch_client_id as string,
-      process.env.twitch_client_secret as string
+      process.env.TWITCH_CLIENT_ID as string,
+      process.env.TWITCH_CLIENT_SECRET as string
     );
   }
 
-  public async initDatabase() {
-    console.log(`Loading database...`);
+  public async fetchDatabase() {
+    console.log(`Fetching data from Mongodb...`);
 
     const promises: Array<Promise<boolean>> = [];
 
     this.guilds.cache.forEach((guild) => {
       promises.push(
         new Promise(async (resolve) => {
-          const db = await new DataBase(
-            `${process.env.APPDATA}/magicord-db`
-          ).select(guild.id);
-          this.database.set(guild.id, db);
+          await axios
+            .get(
+              `${process.env.NEXT_PUBLIC_MAGICORD_URL}/api/database/${guild.id}`
+            )
+            .then((result) => {
+              this.database.set(guild.id, result.data);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
           resolve(true);
         })
       );
@@ -70,7 +78,7 @@ class DcClient extends Client {
         new Promise(async (resolve) => {
           try {
             const historyDataBase = await new DataBase(
-              `${process.env.APPDATA}/magicord-db/history`
+              `${process.env.APPDATA}/magicord/history`
             ).select(guild.id);
             this.hisotryDatas.set(guild.id, historyDataBase);
           } catch (error) {
@@ -96,13 +104,13 @@ class DcClient extends Client {
         return;
       }
 
-      if (!data.member_count) {
+      if (!data.member_count.channel_id) {
         resolve(false);
         return;
       }
 
       const memberCountChannel = <TextChannel>(
-        guild.channels.cache.get(data.member_count)
+        guild.channels.cache.get(data.member_count.channel_id)
       );
       if (!memberCountChannel) {
         resolve(false);
@@ -115,7 +123,7 @@ class DcClient extends Client {
     });
   }
 
-  public async updateMember() {
+  public async updateGuildsMemberCount() {
     const promises: Promise<boolean>[] = [];
 
     this.guilds.cache.forEach((guild) => {
@@ -134,7 +142,7 @@ class DcClient extends Client {
     }
 
     const channel = member.client.channels.cache.get(
-      data.guild_member_add.id
+      data.guild_member_add.channel_id
     ) as TextChannel;
     if (!channel) {
       return;
@@ -142,7 +150,9 @@ class DcClient extends Client {
 
     channel
       .send(`<@${member.user.id}> ${data.guild_member_add.message}`)
-      .catch(() => {});
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   public guildMemberRemove(member: GuildMember | PartialGuildMember) {
@@ -154,7 +164,7 @@ class DcClient extends Client {
     }
 
     const channel = member.client.channels.cache.get(
-      data.guild_member_remove.id
+      data.guild_member_remove.channel_id
     ) as TextChannel;
     if (!channel) {
       return;
@@ -162,7 +172,9 @@ class DcClient extends Client {
 
     channel
       .send(`<@${member.user.id}> ${data.guild_member_remove.message}`)
-      .catch(() => {});
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   public async messageReactionAdd(
@@ -206,7 +218,9 @@ class DcClient extends Client {
     member.roles
       .add(role.id)
       .then(() => {})
-      .catch(() => {});
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   public messageReactionRemove(
@@ -261,7 +275,14 @@ class DcClient extends Client {
       });
 
       portalChannels.forEach(async (portalChannel) => {
-        promises.push((<VoiceChannel>portalChannel).delete());
+        promises.push(
+          new Promise(async (resolve) => {
+            await (<VoiceChannel>portalChannel).delete().catch((error) => {
+              console.log(error);
+            });
+            resolve(<VoiceChannel>portalChannel);
+          })
+        );
       });
     });
 
@@ -269,8 +290,18 @@ class DcClient extends Client {
   }
 
   public async portVoiceChannel(oldState: VoiceState, newState: VoiceState) {
-    if (oldState.member && oldState.channel?.name.match(portalNameRegex)) {
-      await oldState.channel?.delete();
+    if (oldState.channelId) {
+      const guild = this.guilds.cache.get(oldState.guild.id);
+      const voiceChannel = guild?.channels.cache.get(oldState.channelId);
+      const isChannelEmpty =
+        (<Collection<Snowflake, GuildMember>>voiceChannel?.members).size == 0;
+      if (
+        oldState.member &&
+        oldState.channel?.name.match(portalNameRegex) &&
+        isChannelEmpty
+      ) {
+        await oldState.channel.delete().catch(() => {});
+      }
     }
 
     if (!newState.channel) {
@@ -302,7 +333,7 @@ class DcClient extends Client {
     }
 
     // New voice channel name
-    const portalName = `${channelName}-${user.username}#${user.discriminator}`;
+    const portalName = `${channelName}-#${user.username}`;
     const voicePortal = await newState.guild.channels
       .create({
         parent: newState?.channel?.parent,
@@ -329,13 +360,13 @@ class DcClient extends Client {
             resolve(true);
             return;
           }
-          if (!data.social_alert.twitch.name) {
+          if (!data.twitch_alert.twitch_id) {
             resolve(true);
             return;
           }
 
           let streamStatus = <TwitchStatus>(
-            await this.twitchLive.getStreamNotify(data.social_alert.twitch.name)
+            await this.twitchLive.getStreamNotify(data.twitch_alert.twitch_id)
           );
           if (!streamStatus) {
             resolve(true);
@@ -357,7 +388,7 @@ class DcClient extends Client {
           hisotryData.twitch.push(streamStatus.started_at);
 
           const streamNotifyChannel = <TextChannel>(
-            guild.channels.cache.get(data.social_alert.twitch.id)
+            guild.channels.cache.get(data.twitch_alert.channel_id)
           );
           if (!streamNotifyChannel) {
             resolve(true);
@@ -380,7 +411,7 @@ class DcClient extends Client {
       .catch(() => {})
       .finally(() => {
         this.hisotryDatas.each((historyData, key) => {
-          new DataBase(`${process.env.APPDATA}/magicord-db/history`).update(
+          new DataBase(`${process.env.APPDATA}/magicord/history`).update(
             key,
             historyData
           );
