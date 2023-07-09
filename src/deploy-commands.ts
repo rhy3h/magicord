@@ -1,10 +1,10 @@
 import { REST, Routes } from "discord.js";
-import fs from "fs/promises";
+import fs from "fs-extra";
 import path from "path";
 
 // Construct and prepare an instance of the REST module
 const rest = new REST({ version: "10" }).setToken(
-  process.env.magicord_access_token as string
+  process.env.MAGICORD_ACCESS_TOKEN as string
 );
 
 (async () => {
@@ -23,7 +23,9 @@ const rest = new REST({ version: "10" }).setToken(
   try {
     // The put method is used to fully refresh all commands in the guild with the current set
     await rest.put(
-      Routes.applicationCommands(process.env.magicord_client_id as string),
+      Routes.applicationCommands(
+        process.env.NEXT_PUBLIC_MAGICORD_CLIENT_ID as string
+      ),
       {
         body: commands,
       }
