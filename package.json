@@ -18,11 +18,12 @@
     "url": "https://github.com/rhy3h/discord-bot/issues"
   },
   "homepage": "https://github.com/rhy3h/discord-bot#readme",
-  "devDependencies": {
-    "@types/request": "^2.48.8"
-  },
+  "devDependencies": {},
   "dependencies": {
+    "@types/fs-extra": "^11.0.1",
+    "axios": "^1.4.0",
     "discord.js": "^14.6.0",
-    "request": "^2.88.2"
+    "dotenv": "^16.3.1",
+    "fs-extra": "^11.1.1"
   }
 }
