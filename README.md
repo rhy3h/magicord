@@ -1,4 +1,4 @@
-# Discord Bot
+# Magicord
 
 [![wakatime](https://wakatime.com/badge/github/rhy3h/magicord.svg)](https://wakatime.com/badge/github/rhy3h/magicord)
 
