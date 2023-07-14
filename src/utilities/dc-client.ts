@@ -17,7 +17,7 @@ import {
   VoiceChannel,
   VoiceState,
 } from "discord.js";
-import fs from "fs/promises";
+import fs from "fs-extra";
 import path from "path";
 
 import { SlashCommand } from "../components/SlashCommand";
@@ -96,7 +96,7 @@ class DcClient extends Client {
 
     await Promise.all(promises);
 
-    console.log(`Finished...`);
+    console.log(`Finished...\n`);
   }
 
   public async initHistoryDatabase() {
@@ -124,7 +124,7 @@ class DcClient extends Client {
 
     await Promise.all(promises);
 
-    console.log(`Finished...`);
+    console.log(`Finished...\n`);
   }
 
   public async updateMemberCount(guild: Guild) {
