@@ -9,6 +9,7 @@
 - Voice channel portal
 - Twitch live notify
 - Reply button get role
+- Taiwan weather forecast
 
 ### Compiles and development
 
