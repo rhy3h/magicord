@@ -1,5 +1,6 @@
 import {
   ChannelType,
+  ChatInputCommandInteraction,
   Client,
   ClientOptions,
   Collection,
@@ -9,12 +10,17 @@ import {
   PartialGuildMember,
   PartialMessageReaction,
   PartialUser,
+  SlashCommandBuilder,
   Snowflake,
   TextChannel,
   User,
   VoiceChannel,
   VoiceState,
 } from "discord.js";
+import fs from "fs/promises";
+import path from "path";
+
+import { SlashCommand } from "../components/SlashCommand";
 
 import { TwitchLive, TwitchStatus } from "../twitch/index";
 import { TwitchNotifyEmbed } from "../components/TwitchNotifyEmbed";
@@ -25,6 +31,7 @@ import axios from "axios";
 const portalNameRegex = /^.+-#.+$/;
 
 class DcClient extends Client {
+  public commands: Collection<string, SlashCommandBuilder>;
   private database: Collection<string, Guilds>;
   private hisotryDatas: Collection<string, HistoryDB>;
   private twitchLive: TwitchLive;
@@ -32,12 +39,36 @@ class DcClient extends Client {
   constructor(options: ClientOptions) {
     super(options);
 
+    this.commands = new Collection();
     this.database = new Collection();
     this.hisotryDatas = new Collection();
     this.twitchLive = new TwitchLive(
       process.env.TWITCH_CLIENT_ID as string,
       process.env.TWITCH_CLIENT_SECRET as string
     );
+
+    this.initCommands();
+  }
+
+  private async initCommands() {
+    const commandsPath = path.join(__dirname, "../commands");
+    const commandFiles = (await fs.readdir(commandsPath)).filter((file) =>
+      file.endsWith(".ts")
+    );
+
+    for (const file of commandFiles) {
+      const filePath = path.join(commandsPath, file);
+      const command = require(filePath);
+      if ("name" in command && "execute" in command) {
+        this.commands.set(command.name, command);
+        console.log(`[SUCCESS] The command '${command.name}' registered`);
+      } else {
+        console.log(
+          `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+        );
+      }
+    }
+    console.log("");
   }
 
   public async fetchDatabase() {
@@ -417,6 +448,15 @@ class DcClient extends Client {
           );
         });
       });
+  }
+
+  public async executeChatInputCommand(
+    interaction: ChatInputCommandInteraction
+  ) {
+    const slashCommand = <SlashCommand>(
+      this.commands.get(interaction.commandName)
+    );
+    slashCommand?.execute(interaction);
   }
 }
 

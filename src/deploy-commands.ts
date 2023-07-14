@@ -1,6 +1,9 @@
 import { REST, Routes } from "discord.js";
 import fs from "fs-extra";
 import path from "path";
+import { config } from "dotenv";
+
+config();
 
 // Construct and prepare an instance of the REST module
 const rest = new REST({ version: "10" }).setToken(

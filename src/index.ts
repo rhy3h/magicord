@@ -72,6 +72,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!memberPermision) {
     return;
   }
+  // Slash Commands
+  if (interaction.isChatInputCommand()) {
+    client.executeChatInputCommand(interaction);
+  }
 });
 
 client.login(process.env.MAGICORD_ACCESS_TOKEN);
