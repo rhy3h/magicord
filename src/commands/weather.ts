@@ -3,7 +3,7 @@ import { SlashCommand } from "../components/SlashCommand";
 import { CwbWeather } from "../libs/cwb-weather";
 
 const Location = new Map([["taipei", "F-D0047-061"]]);
-class TestCommand extends SlashCommand {
+class WeatherCommand extends SlashCommand {
   constructor() {
     super();
     this.setName("weather")
@@ -61,4 +61,4 @@ class TestCommand extends SlashCommand {
   }
 }
 
-module.exports = new TestCommand();
+module.exports = new WeatherCommand();
