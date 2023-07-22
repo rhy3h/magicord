@@ -2,7 +2,32 @@ import { ChatInputCommandInteraction, PermissionFlagsBits } from "discord.js";
 import { SlashCommand } from "../components/SlashCommand";
 import { CwbWeather } from "../libs/cwb-weather";
 
-const Location = new Map([["taipei", "F-D0047-061"]]);
+const Cities = new Map([
+  [
+    "taipei",
+    {
+      apiId: "F-D0047-061",
+      locations:
+        "北投區,士林區,內湖區,中山區,大同區,松山區,南港區,中正區,萬華區,信義區,大安區,文山區",
+    },
+  ],
+  [
+    "new-taipei",
+    {
+      apiId: "F-D0047-069",
+      locations:
+        "石門區,三芝區,金山區,淡水區,萬里區,八里區,汐止區,林口區,五股區,瑞芳區,蘆洲區,雙溪區,三重區,貢寮區,平溪區,泰山區,新莊區,石碇區,板橋區,深坑區,永和區,樹林區,中和區,土城區,新店區,坪林區,鶯歌區,三峽區,烏來區",
+    },
+  ],
+  [
+    "keelung",
+    {
+      apiId: "F-D0047-049",
+      locations: "安樂區,中山區,中正區,七堵區,信義區,仁愛區,暖暖區",
+    },
+  ],
+]);
+
 class WeatherCommand extends SlashCommand {
   constructor() {
     super();
@@ -17,31 +42,59 @@ class WeatherCommand extends SlashCommand {
               .setName("location")
               .setDescription("Location")
               .setRequired(true)
-              .addChoices(
-                { name: "北投區", value: "北投區" },
-                { name: "士林區", value: "士林區" },
-                { name: "內湖區", value: "內湖區" },
-                { name: "中山區", value: "中山區" },
-                { name: "大同區", value: "大同區" },
-                { name: "松山區", value: "松山區" },
-                { name: "南港區", value: "南港區" },
-                { name: "中正區", value: "中正區" },
-                { name: "萬華區", value: "萬華區" },
-                { name: "信義區", value: "信義區" },
-                { name: "大安區", value: "大安區" },
-                { name: "文山區", value: "文山區" }
-              )
+          )
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName("new-taipei")
+          .setDescription("New Taipei")
+          .addStringOption((option) =>
+            option
+              .setName("location")
+              .setDescription("Location")
+              .setRequired(true)
+          )
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName("keelung")
+          .setDescription("Keelung")
+          .addStringOption((option) =>
+            option
+              .setName("location")
+              .setDescription("Location")
+              .setRequired(true)
           )
       );
   }
 
   public async execute(interaction: ChatInputCommandInteraction) {
-    let apiId = Location.get(interaction.options.getSubcommand()) ?? "";
-    let locationName = interaction.options.getString("location");
+    const cityName = interaction.options.getSubcommand();
+    const location = interaction.options.getString("location");
+
+    const cityInfo = Cities.get(cityName);
+    if (!cityInfo || !location) {
+      return;
+    }
+
+    const locationName = cityInfo.locations
+      .split(",")
+      .find((f) => f.indexOf(location) > -1);
+    if (!locationName) {
+      await interaction.reply({
+        embeds: [
+          {
+            title: `天氣預報查詢錯誤`,
+            color: 0xcce0ff,
+          },
+        ],
+      });
+      return;
+    }
 
     let weatherDatas = await new CwbWeather(
       process.env.CWB_API
-    ).getForecast24hrs(apiId, locationName);
+    ).getForecast24hrs(cityInfo.apiId, locationName);
 
     await interaction
       .reply({
