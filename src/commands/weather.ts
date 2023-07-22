@@ -43,29 +43,21 @@ class TestCommand extends SlashCommand {
       process.env.CWB_API
     ).getForecast24hrs(apiId, locationName);
 
-    if (!weatherDatas.locationName) {
-      await interaction.reply({
+    await interaction
+      .reply({
         embeds: [
           {
-            title: `天氣預報查詢錯誤`,
+            title: `${weatherDatas.locationName}天氣預報`,
             color: 0xcce0ff,
+            fields: weatherDatas.data.map((m) => {
+              return { ...m, inline: true };
+            }),
           },
         ],
+      })
+      .catch((error) => {
+        console.log(`${error.name} ${error.message}`);
       });
-      return;
-    }
-
-    await interaction.reply({
-      embeds: [
-        {
-          title: `${weatherDatas.locationName}天氣預報`,
-          color: 0xcce0ff,
-          fields: weatherDatas.data.map((m) => {
-            return { ...m, inline: true };
-          }),
-        },
-      ],
-    });
   }
 }
 
