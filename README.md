@@ -1,4 +1,4 @@
-# Magicord
+# [Magicord](https://magicord.vercel.app/)
 
 [![wakatime](https://wakatime.com/badge/github/rhy3h/magicord.svg)](https://wakatime.com/badge/github/rhy3h/magicord)
 
@@ -10,12 +10,6 @@
 - Twitch live notify
 - Reply button get role
 - Taiwan weather forecast
-
-### Compiles and development
-
-```
-npm run develop
-```
 
 ### Serve
 
