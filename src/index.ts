@@ -66,12 +66,6 @@ client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
 
 // Commands
 client.on(Events.InteractionCreate, async (interaction) => {
-  const memberPermision = interaction.memberPermissions?.has(
-    PermissionsBitField.Flags.Administrator
-  );
-  if (!memberPermision) {
-    return;
-  }
   // Slash Commands
   if (interaction.isChatInputCommand()) {
     client.executeChatInputCommand(interaction);
