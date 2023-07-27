@@ -22,10 +22,10 @@ import path from "path";
 
 import { SlashCommand } from "../components/SlashCommand";
 
-import { TwitchLive, TwitchStatus } from "../twitch/index";
+import { TwitchLive, TwitchStatus } from "../libs/twitch/index";
 import { TwitchNotifyEmbed } from "../components/TwitchNotifyEmbed";
 
-import { DataBase } from "../database.ts";
+import { DataBase } from "../libs/database";
 import axios from "axios";
 
 const portalNameRegex = /^.+-#.+$/;
