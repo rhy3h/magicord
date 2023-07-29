@@ -4,7 +4,7 @@ import {
   ButtonStyle,
   EmbedBuilder,
 } from "discord.js";
-import { TwitchStatus } from "../libs/twitch";
+import { TwitchStatus } from "@/libs/twitch";
 
 class TwitchNotifyEmbed {
   public embed: EmbedBuilder;

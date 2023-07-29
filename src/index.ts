@@ -4,7 +4,7 @@ import {
   Partials,
   PermissionsBitField,
 } from "discord.js";
-import { DcClient } from "./utilities/dc-client";
+import { DcClient } from "@/utilities/dc-client";
 import { config } from "dotenv";
 
 config();

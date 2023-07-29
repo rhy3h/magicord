@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, PermissionFlagsBits } from "discord.js";
-import { SlashCommand } from "../components/SlashCommand";
-import { CwbWeather } from "../libs/cwb-weather";
+import { SlashCommand } from "@/components/SlashCommand";
+import { CwbWeather } from "@/libs/cwb-weather";
 
 const Cities = new Map([
   [
